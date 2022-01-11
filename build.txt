@@ -1,0 +1,3 @@
+displayName = cookie's factorized
+author = eldritch cookie
+version = 0.1
