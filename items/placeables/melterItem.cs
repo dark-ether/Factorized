@@ -21,7 +21,7 @@ namespace cookiefactorized.items.placeables
 			Item.value = 10000;
 			Item.rare = 6;
 			Item.autoReuse = true;
-            Item.createTile = ModContent.TileType<content.blocks.machines.melterTile>();
+            Item.createTile = ModContent.TileType<tiles.machines.melterTile>();
             Item.useAnimation = 15;
             Item.useTime = 15;
             Item.maxStack = 999;

@@ -5,20 +5,22 @@ using Microsoft.Xna.Framework;
 using Terraria.ModLoader.IO;
 using System.IO;
 using Microsoft.Xna.Framework.Graphics;
-using cookiefactorized.content.blocks.machines;
-
-namespace cookiefactorized.content.TE.machineTE
+using cookiefactorized.tiles.machines;
+using cookiefactorized;
+namespace cookiefactorized.TE.machineTE
 {
     class melterTE : ModTileEntity
     {
         public int timesClicked;
         
         public melterTE(){
-        timesClicked = 0;
+            timesClicked = 0;
+            ModContent.GetInstance<cookiefactorized>().Logger.Debug("created melterTE");
         }
         public melterTE(int x, int y){
             timesClicked = 0;
             Place(x,y);
+            ModContent.GetInstance<cookiefactorized>().Logger.Debug($"position {x},{y}");
         }
 
         public override bool Equals(object obj)
@@ -72,6 +74,7 @@ namespace cookiefactorized.content.TE.machineTE
         public override void LoadData(TagCompound tag)
         {
             base.LoadData(tag);
+            timesClicked = tag.GetInt("timesClicked");
         }
 
         public override void NetPlaceEntityAttempt(int i, int j)
@@ -132,9 +135,8 @@ namespace cookiefactorized.content.TE.machineTE
         public override void SaveData(TagCompound tag)
         {
             base.SaveData(tag);
-            if(tag.GetString("type") == "sendRightClick"){
-            timesClicked += 1;
-            }
+            tag.Add("timesClicked",timesClicked);
+            Mod.Logger.Debug($" increased counter of times clicked");
         }
 
         public override string ToString()

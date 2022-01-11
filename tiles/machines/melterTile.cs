@@ -6,7 +6,7 @@ using cookiefactorized.ui;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria.DataStructures;
 using Terraria.ModLoader.IO;
-using cookiefactorized.content.TE.machineTE;
+using cookiefactorized.TE.machineTE;
 
 namespace cookiefactorized.tiles.machines
 {
@@ -34,7 +34,7 @@ namespace cookiefactorized.tiles.machines
         
         public override void KillMultiTile(int i, int j ,int FrameX , int FrameY)
         {
-            Item.NewItem(i * 16 , j * 16,48,32,ModContent.ItemType<content.items.placeables.melter>());
+            Item.NewItem(i * 16 , j * 16,48,32,ModContent.ItemType<items.placeables.melterItem>());
         }
 
         public override bool RightClick(int x ,int y){
@@ -44,10 +44,11 @@ namespace cookiefactorized.tiles.machines
             
             UICaller.showMelterUI(x, y);
             Main.playerInventory = true;
-            TileEntity thisMelter = TileEntity.ByPosition[new Point16(x,y)];
-            TagCompound info = new TagCompound();
-            info.Add("type","sendRightClick");
-            thisMelter.SaveData(info);
+            TileEntity entityInPosition = TileEntity.ByPosition[new Point16(x,y)];
+            if(entityInPosition is melterTE){
+                melterTE thisMelter = (melterTE) entityInPosition;
+                thisMelter.timesClicked += 1;
+            }
             return true;
         
         }

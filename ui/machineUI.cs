@@ -187,7 +187,14 @@ namespace cookiefactorized.ui {
             base.Update(gameTime);
             
             Elements[0].RemoveAllChildren();
-            int timesClicked = ((melterTE)TileEntity.ByPosition[new Point16(UICaller.melterX,UICaller.melterY)]).timesClicked;
+            int timesClicked = 0;
+            TileEntity entityInPosition;
+            if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.melterX,UICaller.melterY),out entityInPosition)){
+                if(entityInPosition is melterTE){
+                    melterTE thisMelter = (melterTE) entityInPosition;
+                    timesClicked = thisMelter.timesClicked;
+                }
+            }
             Elements[0].Append(new UIText($" clicked {timesClicked} times"));
 
         }

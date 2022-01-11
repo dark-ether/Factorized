@@ -74,8 +74,11 @@ namespace cookiefactorized.ui
         {
             hideUI();
             visibleUI = "melterUI";
-            melterX = x;
+            Tile melter = Main.tile[x,y];
+            melterX = x; 
             melterY = y;
+            //Tile tile = Main.tile[i,j] and then i- tileFrameX/18 j-FrameY/18 supposedly finds the top left corner
+            // the tileentityis placed in the bottomleft corner
             machineInterface?.SetState(melterUI);    
         }
 
