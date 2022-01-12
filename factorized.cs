@@ -4,11 +4,11 @@ using Terraria.UI;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
-using cookiefactorized.ui;
 
-namespace cookiefactorized
+
+namespace factorized
 {
-	public class cookiefactorized : Mod
+	public class factorized : Mod
 	{
     }
 }

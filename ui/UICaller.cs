@@ -7,7 +7,7 @@ using Terraria.Graphics;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace cookiefactorized.ui 
+namespace factorized.ui 
 {
     public class UICaller : ModSystem
     {
@@ -58,7 +58,7 @@ namespace cookiefactorized.ui
             int mouseTextIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
             if(mouseTextIndex != -1){
                 layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
-                    "cookiefactorized: machineInterface",
+                    "factorized: machineInterface",
                     delegate
                             {
                             if(_lastUpdateUiGameTime != null && machineInterface?.CurrentState != null){
@@ -75,8 +75,8 @@ namespace cookiefactorized.ui
             hideUI();
             visibleUI = "melterUI";
             Tile melter = Main.tile[x,y];
-            melterX = x; 
-            melterY = y;
+            melterX = x - melter.frameX / 18; 
+            melterY = (y - melter.frameY/ 18 ) + 1;
             //Tile tile = Main.tile[i,j] and then i- tileFrameX/18 j-FrameY/18 supposedly finds the top left corner
             // the tileentityis placed in the bottomleft corner
             machineInterface?.SetState(melterUI);    

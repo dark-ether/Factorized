@@ -6,9 +6,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using Terraria.DataStructures;
-using cookiefactorized.TE.machineTE;
+using factorized.TE.machineTE;
 
-namespace cookiefactorized.ui {
+namespace factorized.ui {
 
     class machineUI : UIState
     {
