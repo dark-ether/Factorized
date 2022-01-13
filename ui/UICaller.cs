@@ -75,8 +75,8 @@ namespace factorized.ui
             hideUI();
             visibleUI = "melterUI";
             Tile melter = Main.tile[x,y];
-            melterX = x - melter.frameX / 18; 
-            melterY = (y - melter.frameY/ 18 ) + 1;
+            melterX = x;
+            melterY = y;
             //Tile tile = Main.tile[i,j] and then i- tileFrameX/18 j-FrameY/18 supposedly finds the top left corner
             // the tileentityis placed in the bottomleft corner
             machineInterface?.SetState(melterUI);    

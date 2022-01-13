@@ -5,7 +5,9 @@ using Terraria.ObjectData;
 using factorized.ui;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria.DataStructures;
+
 using factorized.TE.machineTE;
+using factorized.tileUtils;
 
 namespace factorized.tiles.machines{
 	public class melterTile : ModTile
@@ -25,13 +27,18 @@ namespace factorized.tiles.machines{
 			//ItemDrop = ModContent.ItemType<content.items.placeables.melter>();
             
             TileObjectData.newTile.CopyFrom(TileObjectData.Style2x2);
-            
+            TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(ModContent.GetInstance<melterTE>()
+            .Hook_AfterPlacement,-1,0,false);
+            TileObjectData.newTile.Origin = new Point16(0,0);    
+
             TileObjectData.addTile(Type);
 			AddMapEntry(new Color(200, 200, 200));
+
 		}
         
         public override void KillMultiTile(int i, int j ,int FrameX , int FrameY)
         {
+            Point16 tileOrigin = TileUtils.GetTileOrigin(i,j);
             Item.NewItem(i * 16 , j * 16,48,32,ModContent.ItemType<items.placeables.melterItem>());
         }
 
@@ -39,27 +46,21 @@ namespace factorized.tiles.machines{
             //Point16 pos = new(x,y);
             //TileEntity = TileEntity.ByPosition[pos];
             //code for acessing tile entity
-            
-            UICaller.showMelterUI(x, y);
+                    
+            Point16 tileOrigin = TileUtils.GetTileOrigin(x,y);
+            UICaller.showMelterUI(tileOrigin.X, tileOrigin.Y);
             Main.playerInventory = true;
-            Tile myTile = Main.tile[x,y];
-
-            int newX = x - myTile.frameX/18;
-            int newY = y - myTile.frameY / 18 + 1;  
-            TileEntity entityInPosition = TileEntity.ByPosition[new Point16(newX,newY)];
-            if(entityInPosition is melterTE){
-                melterTE thisMelter = (melterTE) entityInPosition;
-                thisMelter.timesClicked += 1;
+            TileEntity entityInPosition;
+            if(TileEntity.ByPosition.TryGetValue(tileOrigin,out entityInPosition)){
+                if(entityInPosition is melterTE){
+                    melterTE thisMelter = (melterTE) entityInPosition;
+                    thisMelter.timesClicked += 1;
+                }
             }
             return true;
         
         }
-
-        public override void PlaceInWorld(int i, int j, Item item)
-        {
-            base.PlaceInWorld(i, j, item);
-            melterTE thisMelter = new melterTE(i,j);
-        }
+        
 
     }
 }
