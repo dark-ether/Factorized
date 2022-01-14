@@ -71,6 +71,7 @@ namespace factorized.ui{
 
         public static void showMachineUI(int x, int y){
             hideMachineUI();
+            visibleUI = "machineUI";
             Main.playerInventory = true;
             Tile clickedTile = Main.tile[x,y];//this code finds the topleft tile of a multitile
             machineX = x - clickedTile.frameX/18;

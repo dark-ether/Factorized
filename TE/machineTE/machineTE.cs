@@ -7,13 +7,11 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Terraria.DataStructures;
 using Microsoft.Xna.Framework.Graphics;
-using System.IO;
+using System.Linq;
 
 namespace factorized.TE.machineTE{
     public abstract class machineTE : ModTileEntity
     {
-        public int inputSlotsNumber{get; protected set;}
-        public int outputSlotsNumber{get ; protected set;}
         public Item[] inputSlots;
         public Item[] outputSlots; 
         
@@ -52,29 +50,21 @@ namespace factorized.TE.machineTE{
             }
             return false;
         }
-/*
+
         public override void LoadData(TagCompound tag){
-            inputSlotsNumber = tag.GetInt("inputSlotsNumber");
-            outputSlotsNumber= tag.GetInt("outputSlotsNumber");
-            
-            inputSlots = tag.Get<Item[]>("inputSlots");
-            outputSlots = tag.Get<Item[]>("outputSlots");
+            inputSlots = tag.Get<List<Item>>("inputSlots").ToArray();
+            outputSlots = tag.Get<List<Item>>("outputSlots").ToArray();
         }
-   */     
+    
         public virtual void onPlace(){
-        inputSlotsNumber = 1;
-        outputSlotsNumber = 1;
         inputSlots = new Item[]{new Item()};
         outputSlots = new Item[]{new Item()};
         }
-/*
-        public override void SaveData(TagCompound tag){
-            tag.Set("inputSlotNumber",inputSlotsNumber);
-            tag.Set("outputSlotNumber",outputSlotsNumber);
 
-            tag.Set("inputItems",inputSlots.Clone());
-            tag.Set("outputItems",outputSlots.Clone());
+        public override void SaveData(TagCompound tag){
+            tag.Set("inputSlots",inputSlots.ToList());
+            tag.Set("outputSlots",outputSlots.ToList());
         }
-        */
+        
     }
 }
