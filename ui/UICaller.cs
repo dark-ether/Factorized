@@ -7,15 +7,14 @@ using Terraria.Graphics;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace factorized.ui 
-{
+namespace factorized.ui{
     public class UICaller : ModSystem
     {
         internal static UserInterface machineInterface; //user interface
-        internal static machineUI melterUI; // melter ui
+        internal static machineUI currentMachineUI; // machine ui in this case a melter
         private static GameTime _lastUpdateUiGameTime;
-        public static int melterX;
-        public static int melterY;
+        public static int machineX;
+        public static int machineY;
         private static string visibleUI = "";
         public override string Name => base.Name;
         
@@ -24,14 +23,14 @@ namespace factorized.ui
             if(!Main.dedServ){
                 machineInterface = new UserInterface();//initializes user interface
 
-                melterUI = new machineUI();
-                melterUI.Activate();
+                currentMachineUI = new machineUI();
+                currentMachineUI.Activate();
             }
         }
         
         public override void Unload()
         {
-            melterUI = null;// unloades the ui
+            currentMachineUI = null;// unloads the ui
         }
         
         public override void UpdateUI(GameTime gameTime)
@@ -39,14 +38,14 @@ namespace factorized.ui
             _lastUpdateUiGameTime = gameTime;
             if (machineInterface?.CurrentState != null){// checking for nullity
                 machineInterface.Update(gameTime);
-                if(visibleUI == "melterUI"){
+                if(visibleUI == "machineUI"){
                     if(!Main.playerInventory){
-                        hideUI();
+                    hideMachineUI();
                     }
-                    Vector2 melterPosition = new Vector2(melterX*16,melterY*16);//changing to world coordinates
+                    Vector2 melterPosition = new Vector2(machineX*16,machineY*16);//changing to world coordinates
                     float distance = Vector2.Distance(melterPosition,Main.LocalPlayer.Center);
                     if(distance > 5*16){//5 tiles
-                        hideUI();
+                        hideMachineUI();
                     }
                 }
 
@@ -70,19 +69,16 @@ namespace factorized.ui
             }
         }
 
-        public static void showMelterUI(int x , int y)
-        {
-            hideUI();
-            visibleUI = "melterUI";
-            Tile melter = Main.tile[x,y];
-            melterX = x;
-            melterY = y;
-            //Tile tile = Main.tile[i,j] and then i- tileFrameX/18 j-FrameY/18 supposedly finds the top left corner
-            // the tileentityis placed in the bottomleft corner
-            machineInterface?.SetState(melterUI);    
+        public static void showMachineUI(int x, int y){
+            hideMachineUI();
+            Main.playerInventory = true;
+            Tile clickedTile = Main.tile[x,y];//this code finds the topleft tile of a multitile
+            machineX = x - clickedTile.frameX/18;
+            machineY = y - clickedTile.frameY/18;
+            machineInterface?.SetState(currentMachineUI);
         }
 
-        public static void hideUI()
+        public static void hideMachineUI()
         {
             visibleUI = "";
             machineInterface?.SetState(null);

@@ -12,6 +12,19 @@ namespace factorized.ui {
 
     class machineUI : UIState
     {
+        
+        protected List<UIItemSlot> inputItems;
+        protected List<UIItemSlot> outputItems;
+        protected UIPanel inputPanel;
+        protected UIPanel outputPanel;
+        protected UIPanel processingPanel;
+        private void itemSlotConfig(int index,int numberofSlots, UIItemSlot itemSlot){
+        itemSlot.Height.Set(25,0f);
+        itemSlot.Width.Set(25,0f);
+        itemSlot.HAlign = ((float)index)/((float)numberofSlots);
+        itemSlot.VAlign = 0.25f;
+        }
+
         public override void Click(UIMouseEvent evt)
         {
             base.Click(evt);
@@ -26,11 +39,10 @@ namespace factorized.ui {
         {
             return base.ContainsPoint(point);
         }
+
         public override void DoubleClick(UIMouseEvent evt)
         {
             base.DoubleClick(evt);
-            //check if it is outside and if so close the ui
-
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -105,7 +117,29 @@ namespace factorized.ui {
 
         public override void OnActivate()
         {
+            ModContent.GetInstance<factorized>().Logger.Debug("called onactivate of machineUI");
             base.OnActivate();
+            inputItems = new List<UIItemSlot>();
+            outputItems = new List<UIItemSlot>();
+            TileEntity entityInPosition;
+            if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.machineX,UICaller.machineY),out entityInPosition)  && entityInPosition is machineTE){
+                ModContent.GetInstance<factorized>().Logger.Debug("found tile entity");
+                machineTE machine = (machineTE)entityInPosition;
+                for (int i = 0; i < machine.inputSlotsNumber; i++)
+                {
+                    UIItemSlot itemSlot = new UIItemSlot(machine.inputSlots,i,0);
+                    itemSlotConfig(i,machine.outputSlotsNumber,itemSlot);
+                    inputItems.Add(itemSlot);
+                    inputPanel.Append(itemSlot);
+                }
+                for(int i = 0; i < machine.outputSlotsNumber;i++)
+                {
+                   UIItemSlot itemSlot = new UIItemSlot(machine.outputSlots,i,0);
+                    itemSlotConfig(i,machine.outputSlotsNumber, itemSlot);
+                    outputItems.Add(itemSlot);
+                    outputPanel.Append(itemSlot);
+                }
+            }
         }
 
         public override void OnDeactivate()
@@ -115,31 +149,29 @@ namespace factorized.ui {
 
         public override void OnInitialize()
         {
-        
-            UIPanel inputPanel = new UIPanel();
-            inputPanel.Width.Set(0,0.20f);
-            inputPanel.Height.Set(0,0.35f);
+            ModContent.GetInstance<factorized>().Logger.Debug("onInitialize happened"); 
+            inputPanel = new UIPanel();
+            inputPanel.Width.Set(300,0f);
+            inputPanel.Height.Set(200,0f);
             inputPanel.VAlign = 0.6f;
             inputPanel.HAlign = 0.1f;
             
-            inputPanel.Append(new UIText("number of timesClicked "));
-            /*Item [] inputItems = new Item[4];
-            UIItemSlot inputItemsSlot = new UIItemSlot(inputItems,1,1);
-            inputItemsSlot.Width.Set(0,1f);
-            inputItemsSlot.Height.Set(0,1f);
-            inputPanel.Append(inputItemsSlot);*/
             Append(inputPanel);
-            /*
-            processingPanel.Width.Set(300,400);
-            processingPanel.Height.Set(300,400);
 
-            processingPanel.Append(new UIText(""));
+            processingPanel = new UIPanel(); 
+            processingPanel.Width.Set(300,0f);
+            processingPanel.Height.Set(75,0f);
+            processingPanel.HAlign = 0.1f;
+            processingPanel.VAlign = 0.7f;
+    
             Append(processingPanel);
-
-            outputPanel.Width.Set(100,0);
-            outputPanel.Height.Set(200,0);
             
-            Append(outputPanel);*/
+            outputPanel = new UIPanel();
+            outputPanel.Width.Set(300,0);
+            outputPanel.Height.Set(200,0);
+            outputPanel.HAlign = 0.1f;
+            outputPanel.VAlign = 0.8f;
+            Append(outputPanel);
         }
 
         public override void Recalculate()
@@ -185,18 +217,6 @@ namespace factorized.ui {
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            
-            Elements[0].RemoveAllChildren();
-            int timesClicked = 0;
-            TileEntity entityInPosition;
-            if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.melterX,UICaller.melterY),out entityInPosition)){
-                if(entityInPosition is melterTE){
-                    melterTE thisMelter = (melterTE) entityInPosition;
-                    timesClicked = thisMelter.timesClicked;
-                }
-            }
-            Elements[0].Append(new UIText($" clicked {timesClicked} times"));
-
         }
 
         public override void XButton1Click(UIMouseEvent evt)
