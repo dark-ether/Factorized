@@ -1,8 +1,11 @@
 using Terraria;
+using Terraria.ID;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
+using Terraria.Localization;
 using Terraria.ObjectData;
 using Terraria.Enums;
+using Terraria.Audio;
 using Microsoft.Xna.Framework;
 using factorized.ui;
 using factorized.TE.machineTE;
@@ -39,13 +42,45 @@ namespace factorized.tiles.machines{
         public override bool RightClick(int x, int y){
             Vector2 playerPosition = Main.LocalPlayer.Center;
             Vector2 tilePosition = new(x * 16, y * 16);//remember that tile coordinates are 1/16 world coordinates
+            Player player = Main.LocalPlayer;
 
+            //Should your tile entity bring up a UI, this line is useful to prevent item slots from misbehaving
+            Main.mouseRightRelease = false;
+
+            //The following four (4) if-blocks are recommended to be used if your multitile opens a UI when right clicked:
+            if (player.sign > -1)
+            {
+                SoundEngine.PlaySound(11, -1, -1, 1);
+                player.sign = -1;
+                Main.editSign = false;
+                Main.npcChatText = string.Empty;
+            }
+            
+            if (Main.editChest)
+            {
+                SoundEngine.PlaySound(12, -1, -1, 1);
+                Main.editChest = false;
+                Main.npcChatText = string.Empty;
+            }
+            
+            if (player.editedChestName)
+            {
+                NetMessage.SendData(MessageID.SyncPlayerChest, -1, -1, NetworkText.FromLiteral(Main.chest[player.chest].name), player.chest, 1f, 0f, 0f, 0, 0, 0);
+                player.editedChestName = false;
+            }
+            
+            if (player.talkNPC > -1)
+            {
+                Main.npcChatCornerItem = 0;
+                Main.npcChatText = string.Empty;
+            }
+            
             if(Vector2.Distance(playerPosition,tilePosition)< 5 *16){
-            UICaller.showMachineUI(x,y);
+                UICaller.showMachineUI(x,y);
             return true;
             }
-            return false;
-        }
+                return false;
+            }
 
         public virtual machineTE getTileEntity() => null;
 

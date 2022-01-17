@@ -1,12 +1,15 @@
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.UI;
+using Terraria.ID;
 using Terraria.GameContent.UI.Elements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using Terraria.DataStructures;
 using factorized.TE.machineTE;
+using factorized.library;
+using System;
 
 namespace factorized.ui {
 
@@ -18,27 +21,26 @@ namespace factorized.ui {
         protected UIPanel inputPanel;
         protected UIPanel outputPanel;
         protected UIPanel processingPanel;
-        private void itemSlotConfig(int index,int numberofSlots, UIItemSlot itemSlot){
-        itemSlot.Height.Set(30,0f);
-        itemSlot.Width.Set(30,0f);
-        itemSlot.HAlign = ((float)index)/((float)numberofSlots);
-        itemSlot.VAlign = 0.25f;
-        }
 
+        private void itemSlotConfig(int index,int numberofSlots, UIItemSlot itemSlot){
+            itemSlot.Height.Set(30,0f);
+            itemSlot.Width.Set(30,0f);
+            itemSlot.HAlign = ((float)index)/((float)numberofSlots);
+            itemSlot.VAlign = 0.25f;
+        }
 
         public override void OnActivate()
         {
-            ModContent.GetInstance<factorized>().Logger.Debug("called onactivate of machineUI");
             base.OnActivate();
             inputItems = new List<UIItemSlot>();
             outputItems = new List<UIItemSlot>();
+            ItemSlot.OnItemTransferred += machineSynchronizer;
             TileEntity entityInPosition;
             if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.machineX,UICaller.machineY),out entityInPosition)  && entityInPosition is machineTE){
-                ModContent.GetInstance<factorized>().Logger.Debug("found tile entity");
                 machineTE machine = (machineTE)entityInPosition;
                 for (int i = 0; i < machine.inputSlots.Length; i++)
                 {
-                    UIItemSlot itemSlot = new UIItemSlot(machine.inputSlots,i,4);
+                    UIItemSlot itemSlot = new (machine.inputSlots,i,4);
                     itemSlotConfig(i,machine.outputSlots.Length,itemSlot);
                     inputItems.Add(itemSlot);
                     inputPanel.Append(itemSlot);
@@ -54,9 +56,22 @@ namespace factorized.ui {
             }
         }
 
+        private void machineSynchronizer(ItemSlot.ItemTransferInfo info)
+        {
+            if(info.FromContenxt == ItemSlot.Context.ChestItem || info.ToContext == ItemSlot.Context.ChestItem){
+                TileEntity entityInPosition;
+                if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.machineX,UICaller.machineY),out entityInPosition)){
+                    NetMessage.SendData(MessageID.TileEntitySharing,-1, -1, null
+                    ,entityInPosition.ID,UICaller.machineX,UICaller.machineY);// should sync my machines
+                }
+            }
+        }
+
         public override void OnDeactivate()
         {
             base.OnDeactivate();
+            
+            ItemSlot.OnItemTransferred -= machineSynchronizer;
             inputItems = null;
             outputItems = null;
             inputPanel.RemoveAllChildren();
@@ -90,8 +105,7 @@ namespace factorized.ui {
             outputPanel.VAlign = 0.88f;
             Append(outputPanel);
         }
-
-
+        
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);

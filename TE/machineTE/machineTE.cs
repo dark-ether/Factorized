@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Terraria.DataStructures;
 using Microsoft.Xna.Framework.Graphics;
 using System.Linq;
+using System.IO;
 
 namespace factorized.TE.machineTE{
     public abstract class machineTE : ModTileEntity
@@ -56,6 +57,14 @@ namespace factorized.TE.machineTE{
             outputSlots = tag.Get<List<Item>>("outputSlots").ToArray();
         }
     
+        public override void OnNetPlace()
+        {
+            if(Main.netMode == NetmodeID.Server)
+            {
+                NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
+            }
+        }
+        
         public virtual void onPlace(){
         inputSlots = new Item[]{new Item()};
         outputSlots = new Item[]{new Item()};
@@ -65,6 +74,53 @@ namespace factorized.TE.machineTE{
             tag.Set("inputSlots",inputSlots.ToList());
             tag.Set("outputSlots",outputSlots.ToList());
         }
-        
+
+        public override void Update()
+        {
+            base.Update();
+        }
+
+        public override void OnPlayerUpdate(Player player)
+        {
+            base.OnPlayerUpdate(player);
+        }
+
+
+        public override void NetPlaceEntityAttempt(int i, int j)
+        {
+            base.NetPlaceEntityAttempt(i, j);
+        }
+
+        public override void NetSend(BinaryWriter writer)
+        {
+            writer.Write(inputSlots.Length);
+            foreach(Item item in inputSlots){
+                writer.Write(item.type);
+                writer.Write(item.stack);
+            }
+            writer.Write(outputSlots.Length);
+            foreach(Item item in outputSlots){
+                writer.Write(item.type);
+                writer.Write(item.stack);
+            }
+        }
+
+        public override void NetReceive(BinaryReader reader)
+        {
+            int length = reader.ReadInt32();
+            for(int i =0 ;i < length;i++){
+                int type = reader.ReadInt32();
+                int stack = reader.ReadInt32();
+                inputSlots[i] = new Item(type,stack);
+            }
+            length = reader.ReadInt32();
+            for(int i = 0 ;i < length;i++){
+                int type = reader.ReadInt32();
+                int stack = reader.ReadInt32();
+                outputSlots[i] = new Item(type,stack);
+            }
+
+        }
+
     }
 }

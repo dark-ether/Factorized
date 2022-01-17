@@ -12,8 +12,6 @@ using factorized.tileUtils;
 namespace factorized.tiles.machines{
 	public class melterTile : machineTile
 	{
-        public override string Name => "melter";
-        
         
         public override void KillMultiTile(int i, int j ,int FrameX , int FrameY)
         {
