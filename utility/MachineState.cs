@@ -3,7 +3,7 @@ using Terraria.ModLoader;
 using System.Collections.Generic;
 using System;
 
-namespace factorized.utility
+namespace Factorized.utility
 {
     public class MachineState : TagSerializable
     {

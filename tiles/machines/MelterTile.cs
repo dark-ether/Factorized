@@ -2,14 +2,14 @@ using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ObjectData;
-using factorized.ui;
+using Factorized.ui;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria.DataStructures;
 
-using factorized.TE.machineTE;
-using factorized.tileUtils;
+using Factorized.TE.machineTE;
+using Factorized.tileUtils;
 
-namespace factorized.tiles.machines{
+namespace Factorized.tiles.machines{
 	public class melterTile : machineTile
 	{
         

@@ -59,7 +59,7 @@ namespace Factorized.UI{
             int mouseTextIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Mouse Text"));
             if(mouseTextIndex != -1){
                 layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
-                    "factorized: machineInterface",
+                    "Factorized: machineInterface",
                     delegate
                             {
                             if(_lastUpdateUiGameTime != null && machineInterface?.CurrentState != null){

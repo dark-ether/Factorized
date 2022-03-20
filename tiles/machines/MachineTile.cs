@@ -7,10 +7,10 @@ using Terraria.ObjectData;
 using Terraria.Enums;
 using Terraria.Audio;
 using Microsoft.Xna.Framework;
-using factorized.ui;
-using factorized.TE.machineTE;
+using Factorized.ui;
+using Factorized.TE.machineTE;
 
-namespace factorized.tiles.machines{
+namespace Factorized.tiles.machines{
     public abstract class machineTile : ModTile
     {
         public override void SetStaticDefaults()

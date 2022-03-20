@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using Terraria.DataStructures;
-using factorized.TE.machineTE;
+using Factorized.TE.machineTE;
 using System;
 
 namespace Factorized.UI {
@@ -80,7 +80,7 @@ namespace Factorized.UI {
 
         public override void OnInitialize()
         {
-            ModContent.GetInstance<factorized>().Logger.Debug("onInitialize happened"); 
+            ModContent.GetInstance<Factorized>().Logger.Debug("onInitialize happened"); 
             inputPanel = new UIPanel();
             inputPanel.Width.Set(300,0f);
             inputPanel.Height.Set(150,0f);

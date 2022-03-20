@@ -2,7 +2,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 
-namespace factorized.tileUtils
+namespace Factorized.tileUtils
 {
 	public static class TileUtils
 	{

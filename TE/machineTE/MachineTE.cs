@@ -9,10 +9,10 @@ using Terraria.DataStructures;
 using Microsoft.Xna.Framework.Graphics;
 using System.Linq;
 using System.IO;
-using factorized.utility;
+using Factorized.utility;
 
 //don't forget to read this code for todos
-namespace factorized.TE.machineTE{
+namespace Factorized.TE.machineTE{
     public abstract class machineTE : ModTileEntity
     {
         public Item[] inputSlots {get; protected set;}
@@ -89,7 +89,7 @@ namespace factorized.TE.machineTE{
                 return true;
             }
             }catch(IndexOutOfRangeException){
-                ModContent.GetInstance<factorized>().Logger.Warn("tried to acess a tile outside the world");
+                ModContent.GetInstance<Factorized>().Logger.Warn("tried to acess a tile outside the world");
                 return false;
             }
             return false;
