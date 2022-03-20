@@ -5,11 +5,9 @@ using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
 
-
-namespace factorized
-{
+namespace factorized{
 	public class factorized : Mod
 	{
-    }
+  }
 }
 

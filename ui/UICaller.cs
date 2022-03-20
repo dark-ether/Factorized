@@ -24,13 +24,15 @@ namespace factorized.ui{
                 machineInterface = new UserInterface();//initializes user interface
 
                 currentMachineUI = new machineUI();
-                currentMachineUI.Activate();
+                currentMachineUI.Initialize();
             }
         }
         
         public override void Unload()
         {
             currentMachineUI = null;// unloads the ui
+            machineInterface = null;
+
         }
         
         public override void UpdateUI(GameTime gameTime)

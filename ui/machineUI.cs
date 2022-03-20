@@ -8,7 +8,6 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using Terraria.DataStructures;
 using factorized.TE.machineTE;
-using factorized.library;
 using System;
 
 namespace factorized.ui {
@@ -40,7 +39,7 @@ namespace factorized.ui {
                 machineTE machine = (machineTE)entityInPosition;
                 for (int i = 0; i < machine.inputSlots.Length; i++)
                 {
-                    UIItemSlot itemSlot = new (machine.inputSlots,i,4);
+                    UIItemSlot itemSlot = new (machine.inputSlots,i,3);
                     itemSlotConfig(i,machine.outputSlots.Length,itemSlot);
                     inputItems.Add(itemSlot);
                     inputPanel.Append(itemSlot);
