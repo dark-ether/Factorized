@@ -7,7 +7,7 @@ using Terraria.Graphics;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
-namespace factorized.ui{
+namespace Factorized.UI{
     public class UICaller : ModSystem
     {
         internal static UserInterface machineInterface; //user interface

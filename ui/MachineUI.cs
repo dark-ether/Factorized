@@ -10,7 +10,7 @@ using Terraria.DataStructures;
 using factorized.TE.machineTE;
 using System;
 
-namespace factorized.ui {
+namespace Factorized.UI {
 
     class machineUI : UIState
     {

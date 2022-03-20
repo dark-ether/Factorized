@@ -3,9 +3,9 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace factorized.items.placeables
+namespace Factorized.Items.Placeables
 {
-	public class melterItem : ModItem
+	public class MelterItem : ModItem
 	{
 		public override void SetStaticDefaults()
 		{
