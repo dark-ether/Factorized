@@ -4,11 +4,9 @@ using Terraria.UI;
 using Terraria.ID;
 using Terraria.GameContent.UI.Elements;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using Terraria.DataStructures;
-using Factorized.TE.machineTE;
-using System;
+using Factorized.TE.MachineTE;
 
 namespace Factorized.UI {
 
@@ -35,8 +33,8 @@ namespace Factorized.UI {
             outputItems = new List<UIItemSlot>();
             ItemSlot.OnItemTransferred += machineSynchronizer;
             TileEntity entityInPosition;
-            if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.machineX,UICaller.machineY),out entityInPosition)  && entityInPosition is machineTE){
-                machineTE machine = (machineTE)entityInPosition;
+            if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.machineX,UICaller.machineY),out entityInPosition)  && entityInPosition is MachineTE){
+                MachineTE machine = (MachineTE)entityInPosition;
                 for (int i = 0; i < machine.inputSlots.Length; i++)
                 {
                     UIItemSlot itemSlot = new (machine.inputSlots,i,3);

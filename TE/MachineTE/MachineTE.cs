@@ -4,21 +4,17 @@ using Terraria.ModLoader.IO;
 using Terraria.ID;
 using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
 using Terraria.DataStructures;
-using Microsoft.Xna.Framework.Graphics;
 using System.Linq;
 using System.IO;
-using Factorized.utility;
+using Factorized.Utility;
 
-//don't forget to read this code for todos
-namespace Factorized.TE.machineTE{
-    public abstract class machineTE : ModTileEntity
+namespace Factorized.TE.MachineTE{
+    public abstract class MachineTE : ModTileEntity
     {
         public Item[] inputSlots {get; protected set;}
         public Item[] outputSlots {get; protected set;}
-        public Item[] otherSlots {get; protected set;}
-        protected MachineState machineState;
+        public MachineState machineState;
         protected Dictionary<MachineInput,MachineOutput> ProcessIO;
         
         public virtual int Height{get;} = 2;
@@ -29,17 +25,24 @@ namespace Factorized.TE.machineTE{
         public virtual int NumberOfOtherSlots{get;} = 0;
         public virtual int Width{get;} = 2;
         
-        public virtual void onPlace(int x,int y){}
-        public virtual void onProcessFailure(product process){}                            
-        public virtual void onProcessFound(product foundProcess){}
-        public virtual void onProcessNotFound(){}
-        public virtual void onProcessSucess(product inputConsumed,product outputCreated){}
-        public virtual void onUpdate(){}
-        
+        protected virtual void onPlace(int x,int y){}
+        protected virtual void onProcessFailure(MachineOutput process){}                            
+        protected virtual void onProcessNotFound(){}
+        protected virtual void onProcessSuccess(MachineInput inputConsumed,MachineOutput outputCreated){}
+        protected virtual void onUpdate(){}
+        protected virtual void machineSpecificSetup(){}
+        protected virtual bool canProgress(MachineOutput output){return true;}
+        protected virtual void onProgress(MachineOutput output){}
+        protected virtual void onProcessSuccess(MachineOutput output){}
+        protected virtual void onProgressFailure(MachineOutput output){}
+        protected virtual void onUnableToComplete(MachineOutput output){}
+        protected virtual void onProgressFailure(){}
+        protected virtual void onProgress(){}
+
         public abstract int ValidTile {get;}
         protected abstract void setupProcessIO();
 
-        protected virtual void basicSetup(){
+        protected void basicSetup(){
             inputSlots = new Item[NumberOfInputSlots];
             for(int i = 0 ;i<NumberOfInputSlots; i++){
               inputSlots[i]= new Item();
@@ -48,19 +51,35 @@ namespace Factorized.TE.machineTE{
             for(int i = 0 ; i < NumberOfOutputSlots; i++){
               outputSlots[i]= new Item();
             }
-            otherSlots = new Item[NumberOfOtherSlots];
-            for(int i = 0 ; i< NumberOfOtherSlots;i++){
-              otherSlots[i]= new Item();
-            }
+        }
+        
+        protected virtual void onProcessFound(MachineOutput foundProcess){
+            foundProcess.consumeItems(inputSlots);
         }
 
         protected virtual void updateMachineState(MachineOutput change){
+            change.incrementCounters(machineState);
+            change.incrementValues(machineState);
+            change.setProperties(machineState);
+            change.produceItems(outputSlots);
         }
         
-        protected MachineOutput getProcess(){
+        protected virtual MachineOutput getProcess(){
+            MachineOutput firstFound = null;
+            foreach(var processInputPair in ProcessIO)
+            {
+                if(processInputPair.Key.isCompatible(inputSlots,machineState))
+                {   
+                    firstFound = processInputPair.Value;
+                    break;
+                }
+            }
+            return firstFound;
         }
-        
-        protected bool hasSpaceForProcess(MachineOutput results){
+
+        protected virtual MachineInput machineStateAsMachineInput(MachineState machineState)
+        {
+            throw new NotImplementedException();
         }
 
         public sealed override int Hook_AfterPlacement(int i, int j, int type, int style, int direction, int alternate){
@@ -75,17 +94,20 @@ namespace Factorized.TE.machineTE{
             }
             Point16 tileOrigin = MouseRelativePlacePosition;
             int placedEntity = Place(i - tileOrigin.X, j - tileOrigin.Y);
-            machineTE placedMachine = (machineTE)TileEntity.ByID[placedEntity];
+
+            MachineTE placedMachine = (MachineTE)TileEntity.ByID[placedEntity];
             placedMachine.basicSetup();
+            placedMachine.machineSpecificSetup();
             placedMachine.onPlace(i - tileOrigin.X,j - tileOrigin.Y);
             placedMachine.setupProcessIO();
+
             return placedEntity;
         }
 
         public override bool IsTileValidForEntity(int x, int y){
             try{
             Tile tileInPosition = Main.tile[x,y];
-            if(tileInPosition.type == ValidTile){
+            if(tileInPosition.TileType == ValidTile){
                 return true;
             }
             }catch(IndexOutOfRangeException){
@@ -114,10 +136,9 @@ namespace Factorized.TE.machineTE{
                 int stack = reader.ReadInt32();
                 outputSlots[i] = new Item(type,stack);
             }
-            timer =  reader.ReadInt32();
-
+            machineState = reader.ReadMachineState();
         }
-        //todo change net place send and net receive
+        //todo change net send and net receive
         public override void NetSend(BinaryWriter writer){
             writer.Write(inputSlots.Length);
             foreach(Item item in inputSlots){
@@ -129,9 +150,10 @@ namespace Factorized.TE.machineTE{
                 writer.Write(item.type);
                 writer.Write(item.stack);
             }
-
+            writer.Write(machineState);
+            
         }
-
+        
         public override void OnNetPlace(){
            if(Main.netMode == NetmodeID.Server)
             {
@@ -142,63 +164,70 @@ namespace Factorized.TE.machineTE{
         public override void SaveData(TagCompound tag){
             tag.Set("inputSlots",inputSlots.ToList());
             tag.Set("outputSlots",outputSlots.ToList());
-            tag.Set("otherSlots",otherSlots.ToList());
             tag.Set("machineState",machineState);
         }
         //todo : change net messages again
 
         public override void Update(){
             onUpdate();
-            if(machineState.isProcessing)
+            if(!machineState.IsProcessing())
+            {
+                MachineOutput process = getProcess();
+                machineState.SetProcess(process);
+                if(process != null)
+                {
+                    onProcessFound(machineState.currentProcess);
+                }
+                else 
+                {
+                    onProcessNotFound();
+                }
+            }
+            else
+            {
+                if(machineState.timer != machineState.timerLimit){ 
+                    if(canProgress(machineState.currentProcess))
+                    {
+                        machineState.timer += 1;
+                        onProgress();
+                    }
+                    else
+                    {
+                        onProgressFailure();
+                    }
+                }
+                else 
+                {
+                    if(canGenerateOutput(machineState.currentProcess))
+                    {
+                        updateMachineState(machineState.currentProcess);
+                        onProcessSuccess(machineState.currentProcess);
+                    }
+                    else 
+                    {
+                        onUnableToComplete(machineState.currentProcess);
+                    }
+                }
+            }
         }
 
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-
-        public override void OnPlayerUpdate(Player player)
-        {
-            base.OnPlayerUpdate(player);
-        }
-
-
-
-
-
-
-        public override void NetPlaceEntityAttempt(int i, int j)
-        {
-            base.NetPlaceEntityAttempt(i, j);
-        }
-
-        public override void Load(Mod mod)
-        {
-            base.Load(mod);
-        }
-
-        public override bool IsLoadingEnabled(Mod mod)
-        {
-            return base.IsLoadingEnabled(mod);
-        }
-
-        public override void Unload()
-        {
-            base.Unload();
-        }
-
-        public override void PreGlobalUpdate()
-        {
-            base.PreGlobalUpdate();
-        }
-
-        public override void PostGlobalUpdate()
-        {
-            base.PostGlobalUpdate();
-        }
-
-        public override void OnKill()
-        {
-            base.OnKill();
+        protected virtual bool canGenerateOutput(MachineOutput currentProcess){
+            int freeSlots =  0;
+            for(int i = 0; i < outputSlots.Length; i++)
+            {
+                foreach(var outputItem in currentProcess.itemsToAdd)
+                {
+                    if(outputSlots[i].type == outputItem.Item1)
+                    {
+                        freeSlots += 1;
+                    }
+                }
+                if(outputSlots[i].IsAir)
+                {
+                    freeSlots += 1;
+                }
+            }
+            return freeSlots >= currentProcess.itemsToAdd.Count();
         }
     }
+}

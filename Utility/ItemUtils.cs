@@ -1,6 +1,6 @@
 using Terraria;
 
-namespace Factorized.utility{
+namespace Factorized.Utility{
     public class itemUtils{
         public static bool isAir(Item item){
             return item.IsAir;

@@ -1,6 +1,4 @@
 using Terraria.ModLoader.IO;
-using Terraria.ModLoader;
-using Terraria;
 using System.Collections.Generic;
 using System.Linq;
 namespace Factorized.Utility

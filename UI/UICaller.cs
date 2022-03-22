@@ -76,8 +76,8 @@ namespace Factorized.UI{
             visibleUI = "machineUI";
             Main.playerInventory = true;
             Tile clickedTile = Main.tile[x,y];//this code finds the topleft tile of a multitile
-            machineX = x - clickedTile.frameX/18;
-            machineY = y - clickedTile.frameY/18;
+            machineX = x - clickedTile.TileFrameX/18;
+            machineY = y - clickedTile.TileFrameY/18;
             machineInterface?.SetState(currentMachineUI);
         }
 

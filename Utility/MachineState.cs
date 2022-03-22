@@ -1,9 +1,8 @@
 using Terraria.ModLoader.IO;
-using Terraria.ModLoader;
 using System.Collections.Generic;
 using System;
 
-namespace Factorized.utility
+namespace Factorized.Utility
 {
     public class MachineState : TagSerializable
     {
@@ -12,29 +11,29 @@ namespace Factorized.utility
         public Dictionary<string,int> counters;
         public Dictionary<string,double> values;
         public Dictionary<string,string> properties;
-        
+        public MachineOutput currentProcess;
         //these here define how the above are interpreted 
         public Dictionary<string,int> countersData;
         public Dictionary<string,double> valuesData;
-        public Dictionary<string,string> propertiesData;
-        
+        public Dictionary<string,string> propertiesData;        
         public virtual int timer 
         {
             get{ return counters["timer"];}
             set{ counters["timer"] = value;}
-        }
-        
+        }        
         public virtual int timerLimit
         {
             get{ return countersData["timerLimit"];}
             set{ countersData["timerLimit"] = value;}
         }
-        
         public virtual int energy 
         {
-            get{ int val;
+            get
+            { 
+              int val;
                 counters.TryGetValue("energy",out val);
-              return val;}
+              return val;
+            }
             set{ counters["energy"] = value;}
         }
         public virtual int progressEnergyComsumption
@@ -50,6 +49,16 @@ namespace Factorized.utility
         {
             get{ return energy/energyMultiplier;}
         }
+        public int numberOfSpecialInputSlots
+        {
+            get{return countersData["numberOfSpecialInputSlots"];}
+            set{countersData["numberOfSpecialInputSlots"] = value;}
+        }
+        public int numberOfSpecialOutputSlots
+        { 
+          get{return countersData["numberOfSpecialOutputSlots"];} 
+          set{countersData["numberOfSpecialOutputSlots"] = value;} 
+        }
 
         public MachineState(){
             this.counters       = new ();
@@ -58,23 +67,23 @@ namespace Factorized.utility
             this.countersData   = new ();
             this.valuesData     = new ();
             this.propertiesData = new ();
-            timer = 0;
-            timerLimit = 5*60;
-            energy = 0;
-            energyComsumption = 0;
+            this.timer = 0;
+            this.timerLimit = 5*60;
+            this.energy = 0;
+            this.progressEnergyComsumption = 27720 * 5;
+            this.numberOfSpecialOutputSlots = 0;
+            this.numberOfSpecialInputSlots = 0;
         }
-
-        public MachineState(Dictionary<string, int> counters, Dictionary<string, double> values, 
-                            Dictionary<string, string> properties, Dictionary<string, int> countersData, 
-                            Dictionary<string, double> valuesData, 
-                            Dictionary<string, string> propertiesData)
+        
+        public MachineState(MachineState toCopy)
         {
-            this.counters = counters;
-            this.values = values;
-            this.properties = properties;
-            this.countersData = countersData;
-            this.valuesData = valuesData;
-            this.propertiesData = propertiesData;
+            this.counters = new Dictionary<string, int>(toCopy.counters);
+            this.values  = new Dictionary<string, double>(toCopy.values) ;
+            this.properties = new Dictionary<string, string>(toCopy.properties);
+
+            this.countersData = new Dictionary<string, int>(toCopy.countersData);
+            this.valuesData =  new Dictionary<string, double>(toCopy.valuesData);
+            this.propertiesData = new Dictionary<string, string>(toCopy.propertiesData);
         }
 
         public TagCompound SerializeData()
@@ -100,6 +109,21 @@ namespace Factorized.utility
             myMachineState.valuesData = tag.Get<Dictionary<string,double>>("valuesData");
             myMachineState.propertiesData = tag.Get<Dictionary<string,string>>("propertiesData");
             return myMachineState;
+        }
+
+        public bool IsProcessing()
+        {
+            return currentProcess != null;
+        }
+
+        public void SetProcess(MachineOutput process)
+        {
+           currentProcess = process;
+        }
+
+        public virtual bool CanProgress()
+        {
+            return true;
         }
 
     }

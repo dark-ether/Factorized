@@ -7,11 +7,11 @@ using Terraria.ObjectData;
 using Terraria.Enums;
 using Terraria.Audio;
 using Microsoft.Xna.Framework;
-using Factorized.ui;
-using Factorized.TE.machineTE;
+using Factorized.UI;
+using Factorized.TE.MachineTE;
 
-namespace Factorized.tiles.machines{
-    public abstract class machineTile : ModTile
+namespace Factorized.Tiles.Machines{
+    public abstract class MachineTile : ModTile
     {
         public override void SetStaticDefaults()
         {
@@ -27,7 +27,7 @@ namespace Factorized.tiles.machines{
             TileObjectData.newTile.LavaPlacement = LiquidPlacement.Allowed;
             TileObjectData.newTile.Origin = new Point16(0,0);
             modifyObjectData();
-            machineTE myMachine = getTileEntity();//get tile entity makes the tile call the correct tile entity
+            MachineTE myMachine = getTileEntity();//get tile entity makes the tile call the correct tile entity
             if(myMachine is not null){
                 TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(myMachine.Hook_AfterPlacement
                 ,-1,0,false);
@@ -82,7 +82,7 @@ namespace Factorized.tiles.machines{
                 return false;
             }
 
-        public virtual machineTE getTileEntity() => null;
+        public virtual MachineTE getTileEntity() => null;
 
     }
 }
