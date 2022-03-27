@@ -16,10 +16,10 @@ namespace Factorized.Tiles.Machines{
         public override void SetStaticDefaults()
         {
             Main.tileSolid[Type] = false;
-			Main.tileBlockLight[Type] = true;
-			Main.tileLighted[Type] = true;
+			      Main.tileBlockLight[Type] = true;
+			      Main.tileLighted[Type] = true;
             Main.tileFrameImportant[Type] = true;
-			//ItemDrop = ModContent.ItemType<content.items.placeables.melter>();
+			      //ItemDrop = ModContent.ItemType<content.items.placeables.melter>();
             TileObjectData.newTile.CopyFrom(TileObjectData.Style2x2);
             TileObjectData.newTile.LavaDeath = false;
             TileObjectData.newTile.WaterDeath = false;

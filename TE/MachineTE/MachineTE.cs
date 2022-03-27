@@ -44,12 +44,12 @@ namespace Factorized.TE.MachineTE{
 
         protected void basicSetup(){
             inputSlots = new Item[NumberOfInputSlots];
-            for(int i = 0 ;i<NumberOfInputSlots; i++){
+            for(int i = 0 ; i<NumberOfInputSlots; i++){
               inputSlots[i]= new Item();
             }
             outputSlots = new Item[NumberOfOutputSlots];
             for(int i = 0 ; i < NumberOfOutputSlots; i++){
-              outputSlots[i]= new Item();
+              outputSlots[i] = new Item();
             }
         }
         
@@ -77,10 +77,6 @@ namespace Factorized.TE.MachineTE{
             return firstFound;
         }
 
-        protected virtual MachineInput machineStateAsMachineInput(MachineState machineState)
-        {
-            throw new NotImplementedException();
-        }
 
         public sealed override int Hook_AfterPlacement(int i, int j, int type, int style, int direction, int alternate){
             
