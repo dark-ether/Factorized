@@ -2,7 +2,7 @@ using Terraria.ModLoader.IO;
 using System.Collections.Generic;
 using System.Linq;
 namespace Factorized.Utility
-{
+{  
     /*public class DictionarySerializer<T1,T2>: TagSerializer<Dictionary<T1,T2>,TagCompound>
     {
         public override Dictionary<T1, T2> Deserialize(TagCompound tag)

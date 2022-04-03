@@ -22,7 +22,6 @@ namespace Factorized.TE.MachineTE{
         // point of origin on tile use the same as newTile.origin
         public virtual int NumberOfInputSlots{get;} = 1;
         public virtual int NumberOfOutputSlots{get;} = 1;
-        public virtual int NumberOfOtherSlots{get;} = 0;
         public virtual int Width{get;} = 2;
         
         protected virtual void onPlace(int x,int y){}
@@ -76,7 +75,6 @@ namespace Factorized.TE.MachineTE{
             }
             return firstFound;
         }
-
 
         public sealed override int Hook_AfterPlacement(int i, int j, int type, int style, int direction, int alternate){
             

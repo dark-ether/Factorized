@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System;
 
 namespace Factorized.Utility
-{
+{  
     public class MachineState : TagSerializable
     {
         public static readonly Func<TagCompound,MachineState> DESERIALIZER = machineStateLoad;
@@ -12,7 +12,6 @@ namespace Factorized.Utility
         public Dictionary<string,double> values;
         public Dictionary<string,string> properties;
         public MachineOutput currentProcess;
-        //these here define how the above are interpreted 
         public Dictionary<string,int> countersData;
         public Dictionary<string,double> valuesData;
         public Dictionary<string,string> propertiesData;        

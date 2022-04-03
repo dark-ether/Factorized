@@ -1,3 +1,4 @@
-displayName = cookie's Factorized
+displayName = Factorized
 author = eldritch cookie
 version = 0.1.0
+includePDB = true
