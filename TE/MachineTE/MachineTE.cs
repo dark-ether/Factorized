@@ -42,6 +42,13 @@ namespace Factorized.TE.MachineTE{
         public abstract int ValidTile {get;}
         protected abstract void setupProcessIO();
 
+        protected void setup(int i, int j)
+        {
+            basicSetup();
+            machineSpecificSetup();
+            onPlace(i,j);
+            setupProcessIO();
+        }
         protected void basicSetup(){
             inputSlots = new Item[NumberOfInputSlots];
             for(int i = 0 ; i<NumberOfInputSlots; i++){
@@ -51,6 +58,7 @@ namespace Factorized.TE.MachineTE{
             for(int i = 0 ; i < NumberOfOutputSlots; i++){
               outputSlots[i] = new Item();
             }
+            machineState = new ();
         }
         
         protected virtual void onProcessFound(MachineOutput foundProcess){
@@ -62,7 +70,6 @@ namespace Factorized.TE.MachineTE{
             change.incrementValues(machineState);
             change.setProperties(machineState);
             change.produceItems(outputSlots);
-            ModContent.GetInstance<Factorized>().Logger.Info("updateMachineState was ran");
         }
         
         protected virtual MachineOutput getProcess(){
@@ -92,10 +99,7 @@ namespace Factorized.TE.MachineTE{
             int placedEntity = Place(i - tileOrigin.X, j - tileOrigin.Y);
 
             MachineTE placedMachine = (MachineTE)TileEntity.ByID[placedEntity];
-            placedMachine.basicSetup();
-            placedMachine.machineSpecificSetup();
-            placedMachine.onPlace(i - tileOrigin.X,j - tileOrigin.Y);
-            placedMachine.setupProcessIO();
+            placedMachine.setup(i - tileOrigin.X,j - tileOrigin.Y);
 
             return placedEntity;
         }
@@ -114,9 +118,18 @@ namespace Factorized.TE.MachineTE{
         }
 
         public override void LoadData(TagCompound tag){
-            inputSlots = tag.Get<List<Item>>("inputSlots").ToArray();
-            outputSlots = tag.Get<List<Item>>("outputSlots").ToArray();
-            machineState = tag.Get<MachineState>("machineState");
+            basicSetup();
+            List<Item> previousInputSlots =  tag.Get<List<Item>>("inputSlots");
+            List<Item> previousOutputSlots = tag.Get<List<Item>>("outputSlots");
+            for(int i = 0 ; i < previousInputSlots.Count;i++)
+            {
+                inputSlots[i] = previousInputSlots.ElementAt<Item>(i);
+            }            
+            for(int i = 0 ; i < previousOutputSlots.Count;i++)
+            {
+                outputSlots[i] = previousOutputSlots.ElementAt<Item>(i);
+            }
+            machineState = new (tag.Get<MachineState>("machineState"));
             setupProcessIO();
         }
         

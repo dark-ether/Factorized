@@ -69,7 +69,7 @@ namespace Factorized.Utility
             this.timer = 0;
             this.timerLimit = 5*60;
             this.energy = 0;
-            this.progressEnergyComsumption = 27720 * 5;
+            this.progressEnergyComsumption = energyMultiplier * 5;
             this.numberOfSpecialOutputSlots = 0;
             this.numberOfSpecialInputSlots = 0;
         }
@@ -101,12 +101,12 @@ namespace Factorized.Utility
         public static MachineState machineStateLoad(TagCompound tag)
         {
             MachineState myMachineState = new MachineState ();
-            myMachineState.counters = tag.Get<Dictionary<string,int>>("counters");
-            myMachineState.values = tag.Get<Dictionary<string,double>>("values");
-            myMachineState.properties = tag.Get<Dictionary<string,string>>("properties");
-            myMachineState.countersData = tag.Get<Dictionary<string,int>>("countersData");
-            myMachineState.valuesData = tag.Get<Dictionary<string,double>>("valuesData");
-            myMachineState.propertiesData = tag.Get<Dictionary<string,string>>("propertiesData");
+            myMachineState.counters = new (tag.Get<Dictionary<string,int>>("counters"));
+            myMachineState.values = new (tag.Get<Dictionary<string,double>>("values"));
+            myMachineState.properties = new (tag.Get<Dictionary<string,string>>("properties"));
+            myMachineState.countersData = new (tag.Get<Dictionary<string,int>>("countersData"));
+            myMachineState.valuesData = new (tag.Get<Dictionary<string,double>>("valuesData"));
+            myMachineState.propertiesData = new (tag.Get<Dictionary<string,string>>("propertiesData"));
             return myMachineState;
         }
 
