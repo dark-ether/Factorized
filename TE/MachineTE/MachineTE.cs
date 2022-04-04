@@ -8,6 +8,7 @@ using Terraria.DataStructures;
 using System.Linq;
 using System.IO;
 using Factorized.Utility;
+using Factorized;
 
 namespace Factorized.TE.MachineTE{
     public abstract class MachineTE : ModTileEntity
@@ -20,8 +21,8 @@ namespace Factorized.TE.MachineTE{
         public virtual int Height{get;} = 2;
         public virtual Point16 MouseRelativePlacePosition{get;} = new Point16(0,0);
         // point of origin on tile use the same as newTile.origin
-        public virtual int NumberOfInputSlots{get;} = 1;
-        public virtual int NumberOfOutputSlots{get;} = 1;
+        public virtual int NumberOfInputSlots{get;} = 3;
+        public virtual int NumberOfOutputSlots{get;} = 2;
         public virtual int Width{get;} = 2;
         
         protected virtual void onPlace(int x,int y){}
@@ -61,6 +62,7 @@ namespace Factorized.TE.MachineTE{
             change.incrementValues(machineState);
             change.setProperties(machineState);
             change.produceItems(outputSlots);
+            ModContent.GetInstance<Factorized>().Logger.Info("updateMachineState was ran");
         }
         
         protected virtual MachineOutput getProcess(){
@@ -115,6 +117,7 @@ namespace Factorized.TE.MachineTE{
             inputSlots = tag.Get<List<Item>>("inputSlots").ToArray();
             outputSlots = tag.Get<List<Item>>("outputSlots").ToArray();
             machineState = tag.Get<MachineState>("machineState");
+            setupProcessIO();
         }
         
         public override void NetReceive(BinaryReader reader){

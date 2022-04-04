@@ -23,7 +23,6 @@ namespace Factorized.TE.MachineTE{
             output.itemsToRemove.Add(item);
             item = (ItemID.Glass,2);
             output.itemsToAdd.Add(item);
-
         }
     }
 }

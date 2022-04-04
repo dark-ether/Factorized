@@ -1,7 +1,7 @@
 using Terraria.ModLoader.IO;
 using System.Collections.Generic;
 
-namespace FactorizedUtility
+namespace Factorized.Utility
 {  
     public class KeyValuePairStringIntSerializer : TagSerializer<KeyValuePair<string,int>,TagCompound>
     {
