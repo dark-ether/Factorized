@@ -241,5 +241,24 @@ namespace Factorized.TE.MachineTE{
             }
             return freeSlots >= currentProcess.itemsToAdd.Count();
         }
+        public virtual bool hasItems()
+        {
+            bool foundItem = false;
+            foreach(var item in outputSlots)
+            {
+                if (!item.IsAir)
+                {
+                    foundItem = true;
+                }
+            }            
+            foreach(var item in inputSlots)
+            {
+                if (!item.IsAir)
+                {
+                    foundItem = true;
+                }
+            }
+            return foundItem;
+        }
     }
 }

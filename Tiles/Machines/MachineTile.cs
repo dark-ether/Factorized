@@ -9,6 +9,7 @@ using Terraria.Audio;
 using Microsoft.Xna.Framework;
 using Factorized.UI;
 using Factorized.TE.MachineTE;
+using Factorized.Utility;
 
 namespace Factorized.Tiles.Machines{
     public abstract class MachineTile : ModTile
@@ -35,6 +36,17 @@ namespace Factorized.Tiles.Machines{
             TileObjectData.addTile(Type);
         }
         
+        public override bool CanKillTile(int i,int j,ref bool blockDamaged)
+        {
+            return !getTileEntityInLocation(i,j).hasItems();
+        }
+
+        public virtual MachineTE getTileEntityInLocation(int i ,int j)
+        {
+            MachineTE tileEntity = (MachineTE) TileEntity.ByPosition[TileUtils.GetTileOrigin(i,j)];
+            return tileEntity;
+        }
+
         public virtual void modifyObjectData()
         {
         }
