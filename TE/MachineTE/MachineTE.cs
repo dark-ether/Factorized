@@ -70,6 +70,8 @@ namespace Factorized.TE.MachineTE{
             change.incrementValues(machineState);
             change.setProperties(machineState);
             change.produceItems(outputSlots);
+            machineState.currentProcess = null;
+            machineState.timer = 0;
         }
         
         protected virtual MachineOutput getProcess(){
