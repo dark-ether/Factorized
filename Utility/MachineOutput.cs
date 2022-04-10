@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using Terraria.ModLoader.IO;
 using Terraria.ModLoader;
 using Terraria;
-
+using System;
 namespace Factorized.Utility
 { 
-    public class MachineOutput 
+    public class MachineOutput : TagSerializable
     {
         public List<(int,int)> itemsToAdd;
         public List<(int,int)> itemsToRemove;
@@ -13,6 +13,8 @@ namespace Factorized.Utility
         public Dictionary<string,double>  changeValues;
         public Dictionary<string,string>  propertiesToSet;
         
+
+        public static readonly Func<TagCompound,MachineOutput> DESERIALIZER = machineOutputLoad;
         public MachineOutput()
         {
             this.itemsToAdd = new ();
@@ -21,6 +23,16 @@ namespace Factorized.Utility
             this.changeValues = new ();
             this.propertiesToSet = new ();
         }
+        
+        public MachineOutput(MachineOutput toCopy)
+        {
+            this.itemsToAdd = new (toCopy.itemsToAdd);
+            this.itemsToRemove = new (toCopy.itemsToRemove);
+            this.changeCounters = new (toCopy.changeCounters);
+            this.propertiesToSet = new (toCopy.propertiesToSet);
+            this.changeValues =  new (toCopy.changeValues);
+        }
+        
         public void incrementCounters(MachineState machineState)
         {
             foreach (var counter in changeCounters)
@@ -95,6 +107,29 @@ namespace Factorized.Utility
                     }
                 }
             }
+        }
+
+        public static MachineOutput machineOutputLoad(TagCompound tag)
+        {
+            MachineOutput loaded = new ();
+            loaded.itemsToAdd = (List<(int,int)>) tag.GetList<(int,int)>("itemsToAdd");
+            loaded.itemsToRemove =  (List<(int,int)>) tag.GetList<(int,int)>("itemsToRemove");
+            loaded.changeCounters = tag.Get<Dictionary<string,int>>("changeCounters");
+            loaded.changeValues = tag.Get<Dictionary<string,double>>("changeValues");
+            loaded.propertiesToSet = tag.Get<Dictionary<string,string>>("propertiesToSet");
+            return loaded;
+        }
+
+        public TagCompound SerializeData()
+        {
+            return new TagCompound ()
+            {
+                ["itemsToAdd"] = itemsToAdd,
+                ["itemsToRemove"] = itemsToRemove,
+                ["changeCounters"] = changeCounters,
+                ["changeValues"] = changeValues,
+                ["propertiesToSet"] = propertiesToSet
+            };
         }
     }
 } 

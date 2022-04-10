@@ -11,8 +11,8 @@ using Terraria.ID;
 using System.Collections.Generic;
 
 namespace Factorized.TE.MachineTE{
-    public class MelterTE : MachineTE {
-        public override int ValidTile => ModContent.TileType<MelterTile>();
+    public class HeavyFurnaceTE : MachineTE {
+        public override int ValidTile => ModContent.TileType<HeavyFurnaceTile>();
         protected override void setupProcessIO()
         {
             MachineInput input = new ();

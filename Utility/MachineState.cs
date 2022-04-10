@@ -1,7 +1,7 @@
 using Terraria.ModLoader.IO;
 using System.Collections.Generic;
 using System;
-
+using Terraria;
 namespace Factorized.Utility
 {  
     public class MachineState : TagSerializable
@@ -14,17 +14,21 @@ namespace Factorized.Utility
         public MachineOutput currentProcess;
         public Dictionary<string,int> countersData;
         public Dictionary<string,double> valuesData;
-        public Dictionary<string,string> propertiesData;        
+        public Dictionary<string,string> propertiesData;   
+        public Func<MachineState,Item[],Item[],bool> canProgress;
+
         public virtual int timer 
         {
             get{ return counters["timer"];}
             set{ counters["timer"] = value;}
         }        
+        
         public virtual int timerLimit
         {
             get{ return countersData["timerLimit"];}
             set{ countersData["timerLimit"] = value;}
         }
+        
         public virtual int energy 
         {
             get
@@ -35,31 +39,37 @@ namespace Factorized.Utility
             }
             set{ counters["energy"] = value;}
         }
+        
         public virtual int progressEnergyComsumption
         {
             get{ return countersData["energyComsumption"];}
             set{ countersData["energyComsumption"] = value;} 
         }
+        
         public int energyMultiplier
         {
             get{return 27720;}
         }
+        
         public double TerraFlux
         {
             get{ return energy/energyMultiplier;}
         }
+        
         public int numberOfSpecialInputSlots
         {
             get{return countersData["numberOfSpecialInputSlots"];}
             set{countersData["numberOfSpecialInputSlots"] = value;}
         }
+        
         public int numberOfSpecialOutputSlots
         { 
           get{return countersData["numberOfSpecialOutputSlots"];} 
           set{countersData["numberOfSpecialOutputSlots"] = value;} 
         }
 
-        public MachineState(){
+        public MachineState()
+        {
             this.counters       = new ();
             this.values         = new ();
             this.properties     = new ();
@@ -72,6 +82,8 @@ namespace Factorized.Utility
             this.progressEnergyComsumption = energyMultiplier * 5;
             this.numberOfSpecialOutputSlots = 0;
             this.numberOfSpecialInputSlots = 0;
+            this.currentProcess = null;
+            this.canProgress = trivialProgression;
         }
         
         public MachineState(MachineState toCopy)
@@ -83,6 +95,8 @@ namespace Factorized.Utility
             this.countersData = new Dictionary<string, int>(toCopy.countersData);
             this.valuesData =  new Dictionary<string, double>(toCopy.valuesData);
             this.propertiesData = new Dictionary<string, string>(toCopy.propertiesData);
+
+            this.currentProcess = new (toCopy.currentProcess);
         }
 
         public TagCompound SerializeData()
@@ -93,7 +107,8 @@ namespace Factorized.Utility
                 ["properties"]      = properties,
                 ["countersData"]    = countersData,
                 ["valuesData"]      = valuesData,
-                ["propertiesData"]  = propertiesData
+                ["propertiesData"]  = propertiesData,
+                ["currentProcess"]  = currentProcess
             };                
             return myTag;
         }
@@ -107,6 +122,7 @@ namespace Factorized.Utility
             myMachineState.countersData = new (tag.Get<Dictionary<string,int>>("countersData"));
             myMachineState.valuesData = new (tag.Get<Dictionary<string,double>>("valuesData"));
             myMachineState.propertiesData = new (tag.Get<Dictionary<string,string>>("propertiesData"));
+            myMachineState.currentProcess = new (tag.Get<MachineOutput>("currentProcess"));
             return myMachineState;
         }
 
@@ -120,7 +136,7 @@ namespace Factorized.Utility
            currentProcess = process;
         }
 
-        public virtual bool CanProgress()
+        public static bool trivialProgression(MachineState MachineState, Item[] inputItems, Item[] outputItems)
         {
             return true;
         }

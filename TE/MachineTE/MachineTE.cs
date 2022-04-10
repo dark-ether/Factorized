@@ -49,6 +49,7 @@ namespace Factorized.TE.MachineTE{
             onPlace(i,j);
             setupProcessIO();
         }
+
         protected void basicSetup(){
             inputSlots = new Item[NumberOfInputSlots];
             for(int i = 0 ; i<NumberOfInputSlots; i++){
@@ -241,6 +242,7 @@ namespace Factorized.TE.MachineTE{
             }
             return freeSlots >= currentProcess.itemsToAdd.Count();
         }
+
         public virtual bool hasItems()
         {
             bool foundItem = false;
