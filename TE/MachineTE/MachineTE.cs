@@ -52,7 +52,7 @@ namespace Factorized.TE.MachineTE{
 
         protected void basicSetup(){
             inputSlots = new Item[NumberOfInputSlots];
-            for(int i = 0 ; i<NumberOfInputSlots; i++){
+            for(int i = 0 ; i < NumberOfInputSlots; i++){
               inputSlots[i]= new Item();
             }
             outputSlots = new Item[NumberOfOutputSlots];
@@ -60,6 +60,12 @@ namespace Factorized.TE.MachineTE{
               outputSlots[i] = new Item();
             }
             machineState = new ();
+            for(int i = 0; i < inputSlots.Length; i++){
+                machineState.inputSlotsMetadata.Add("input");
+            }
+            for(int i = 0; i < outputSlots.Length; i++){
+                machineState.outputSlotsMetadata.Add("output");
+            }
         }
         
         protected virtual void onProcessFound(MachineOutput foundProcess){

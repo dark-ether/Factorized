@@ -17,9 +17,11 @@ namespace Factorized.TE.MachineTE{
         {
             MachineInput input = new ();
             MachineOutput output = new ();
+            List<(int,int)> category1 = new ();
             (int,int) item; 
             item = (ItemID.SandBlock,1);
-            input.inputItems.Add(item);
+            category1.Add(item);
+            input.inputItems["input"] = category1;
             output.itemsToRemove.Add(item);
             item = (ItemID.Glass,2);
             output.itemsToAdd.Add(item);
