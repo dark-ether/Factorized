@@ -7,15 +7,16 @@ namespace Factorized.Utility
     public class MachineState : TagSerializable
     {
         public static readonly Func<TagCompound,MachineState> DESERIALIZER = machineStateLoad;
-
+        public static List<Func<MachineState,bool>> canProgressFunctions;
         public Dictionary<string,int> counters;
         public Dictionary<string,double> values;
         public Dictionary<string,string> properties;
         public MachineOutput currentProcess;
+        public List<string> inputSlotsMetadata;
+        public List<string> outputSlotsMetadata;
         public Dictionary<string,int> countersData;
         public Dictionary<string,double> valuesData;
         public Dictionary<string,string> propertiesData;   
-        public Func<MachineState,Item[],Item[],bool> canProgress;
 
         public virtual int timer 
         {
@@ -64,10 +65,23 @@ namespace Factorized.Utility
         
         public int numberOfSpecialOutputSlots
         { 
-          get{return countersData["numberOfSpecialOutputSlots"];} 
-          set{countersData["numberOfSpecialOutputSlots"] = value;} 
+            get{return countersData["numberOfSpecialOutputSlots"];} 
+            set{countersData["numberOfSpecialOutputSlots"] = value;} 
         }
-
+        
+        public int progressFunction
+        {
+            get{return countersData["progressFunction"];}
+            set{countersData["progressFunction"] = value;}
+        }
+        
+        static MachineState()
+        {
+            canProgressFunctions = new ();
+            canProgressFunctions.Add(MachineState.trivialProgression);
+            canProgressFunctions.Add(MachineState.energyLockedProgression);
+        }
+        
         public MachineState()
         {
             this.counters       = new ();
@@ -83,7 +97,9 @@ namespace Factorized.Utility
             this.numberOfSpecialOutputSlots = 0;
             this.numberOfSpecialInputSlots = 0;
             this.currentProcess = null;
-            this.canProgress = trivialProgression;
+            this.progressFunction = 0; //trivial progression
+            this.inputSlotsMetadata = new ();
+            this.outputSlotsMetadata = new ();
         }
         
         public MachineState(MachineState toCopy)
@@ -97,6 +113,8 @@ namespace Factorized.Utility
             this.propertiesData = new Dictionary<string, string>(toCopy.propertiesData);
 
             this.currentProcess = new (toCopy.currentProcess);
+            this.outputSlotsMetadata =  new (toCopy.outputSlotsMetadata);
+            this.inputSlotsMetadata = new (toCopy.inputSlotsMetadata);
         }
 
         public TagCompound SerializeData()
@@ -108,7 +126,9 @@ namespace Factorized.Utility
                 ["countersData"]    = countersData,
                 ["valuesData"]      = valuesData,
                 ["propertiesData"]  = propertiesData,
-                ["currentProcess"]  = currentProcess
+                ["currentProcess"]  = currentProcess,
+                ["inputSlotsMetadata"] = inputSlotsMetadata,
+                ["outputSlotsMetadata"] = outputSlotsMetadata
             };                
             return myTag;
         }
@@ -123,6 +143,8 @@ namespace Factorized.Utility
             myMachineState.valuesData = new (tag.Get<Dictionary<string,double>>("valuesData"));
             myMachineState.propertiesData = new (tag.Get<Dictionary<string,string>>("propertiesData"));
             myMachineState.currentProcess = new (tag.Get<MachineOutput>("currentProcess"));
+            myMachineState.inputSlotsMetadata = new (tag.GetList<string>("inputSlotsMetadata"));
+            myMachineState.outputSlotsMetadata = new (tag.GetList<string>("outputSlotsMetadata"));
             return myMachineState;
         }
 
@@ -136,10 +158,14 @@ namespace Factorized.Utility
            currentProcess = process;
         }
 
-        public static bool trivialProgression(MachineState MachineState, Item[] inputItems, Item[] outputItems)
+        public static bool trivialProgression(MachineState machineState)
         {
             return true;
         }
 
+        public static bool energyLockedProgression(MachineState machineState)
+        {
+            return machineState.energy >= (machineState.currentProcess.changeCounters["energy"] * (-1));
+        }
     }
 }

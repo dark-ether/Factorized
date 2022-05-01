@@ -12,7 +12,7 @@ namespace Factorized.Utility
         public Dictionary<string,int>     changeCounters;
         public Dictionary<string,double>  changeValues;
         public Dictionary<string,string>  propertiesToSet;
-        
+        public int processingTime; 
 
         public static readonly Func<TagCompound,MachineOutput> DESERIALIZER = machineOutputLoad;
         public MachineOutput()
@@ -22,6 +22,7 @@ namespace Factorized.Utility
             this.changeCounters = new ();
             this.changeValues = new ();
             this.propertiesToSet = new ();
+            this.processingTime = 1;
         }
         
         public MachineOutput(MachineOutput toCopy)
@@ -31,6 +32,7 @@ namespace Factorized.Utility
             this.changeCounters = new (toCopy.changeCounters);
             this.propertiesToSet = new (toCopy.propertiesToSet);
             this.changeValues =  new (toCopy.changeValues);
+            this.processingTime = toCopy.processingTime;
         }
         
         public void incrementCounters(MachineState machineState)
@@ -70,6 +72,7 @@ namespace Factorized.Utility
                 machineState.properties[property.Key] = property.Value;
             }
         }
+
         public void consumeItems(Item[] input)
         {
             foreach(var item in itemsToRemove)
@@ -87,6 +90,7 @@ namespace Factorized.Utility
                 }
             }
         }
+
         public void produceItems(Item[] output)
         {
             foreach(var item in itemsToAdd)
@@ -117,6 +121,7 @@ namespace Factorized.Utility
             loaded.changeCounters = tag.Get<Dictionary<string,int>>("changeCounters");
             loaded.changeValues = tag.Get<Dictionary<string,double>>("changeValues");
             loaded.propertiesToSet = tag.Get<Dictionary<string,string>>("propertiesToSet");
+            loaded.processingTime = tag.GetInt("processingTime");
             return loaded;
         }
 
@@ -128,7 +133,8 @@ namespace Factorized.Utility
                 ["itemsToRemove"] = itemsToRemove,
                 ["changeCounters"] = changeCounters,
                 ["changeValues"] = changeValues,
-                ["propertiesToSet"] = propertiesToSet
+                ["propertiesToSet"] = propertiesToSet,
+                ["processingTime"] = processingTime
             };
         }
     }

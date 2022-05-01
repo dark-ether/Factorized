@@ -48,6 +48,8 @@ namespace Factorized.Utility {
             writer.Write(machineState.propertiesData);
 
             writer.Write(machineState.currentProcess);
+            writer.Write(machineState.inputSlotsMetadata);
+            writer.Write(machineState.outputSlotsMetadata);
         }
 
         public static void Write(this BinaryWriter writer, MachineOutput output)
@@ -57,6 +59,7 @@ namespace Factorized.Utility {
             writer.Write(output.changeCounters);
             writer.Write(output.changeValues);
             writer.Write(output.propertiesToSet);
+            writer.Write(output.processingTime);
         }
         
         public static void Write(this BinaryWriter writer, List<(int,int)> listoftuples)
@@ -66,6 +69,14 @@ namespace Factorized.Utility {
             {
                 writer.Write(tuple.Item1);
                 writer.Write(tuple.Item2);
+            }
+        }
+
+        public static void Write(this BinaryWriter writer, List<string> listostrings)
+        {
+            writer.Write(listostrings.Count);
+            foreach (var myString in listostrings) {
+                writer.Write(myString);
             }
         }
 
@@ -119,6 +130,8 @@ namespace Factorized.Utility {
             machine.valuesData = reader.ReadStringDoubleDictionary();
             machine.propertiesData = reader.ReadStringStringDictionary();
             machine.currentProcess = reader.ReadMachineOutput();
+            machine.inputSlotsMetadata = reader.ReadListOfString();
+            machine.outputSlotsMetadata = reader.ReadListOfString();
             return machine;
         }
 
@@ -131,6 +144,7 @@ namespace Factorized.Utility {
             machine.changeCounters = reader.ReadStringIntDictionary();
             machine.changeValues = reader.ReadStringDoubleDictionary();
             machine.propertiesToSet = reader.ReadStringStringDictionary();
+            machine.processingTime = reader.ReadInt32();
             return machine;
         }
 
@@ -143,6 +157,16 @@ namespace Factorized.Utility {
                 int type = reader.ReadInt32();
                 int quantity = reader.ReadInt32();
                 list.Add((type,quantity));
+            }
+            return list;
+        }
+        public static List<string> ReadListOfString(this BinaryReader reader)
+        {
+            List<string> list = new ();
+            int count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                list.Add(reader.ReadString());
             }
             return list;
         }
