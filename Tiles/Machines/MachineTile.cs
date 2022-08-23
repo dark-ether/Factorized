@@ -62,7 +62,8 @@ namespace Factorized.Tiles.Machines{
             //The following four (4) if-blocks are recommended to be used if your multitile opens a UI when right clicked:
             if (player.sign > -1)
             {
-                SoundEngine.PlaySound(11, -1, -1, 1);
+                //TODO: Fix this 
+                //SoundEngine.PlaySound(11, -1, -1, 1);
                 player.sign = -1;
                 Main.editSign = false;
                 Main.npcChatText = string.Empty;
@@ -70,7 +71,8 @@ namespace Factorized.Tiles.Machines{
             
             if (Main.editChest)
             {
-                SoundEngine.PlaySound(12, -1, -1, 1);
+                //TODO: Fix this
+                //SoundEngine.PlaySound(12, -1, -1, 1);
                 Main.editChest = false;
                 Main.npcChatText = string.Empty;
             }

@@ -46,8 +46,12 @@ namespace Factorized.Utility {
             writer.Write(machineState.countersData);
             writer.Write(machineState.valuesData);
             writer.Write(machineState.propertiesData);
-
-            writer.Write(machineState.currentProcess);
+            if(machineState.currentProcess != null){
+              writer.Write(true);
+              writer.Write(machineState.currentProcess);
+            } else {
+              writer.Write(false);
+            }
             writer.Write(machineState.inputSlotsMetadata);
             writer.Write(machineState.outputSlotsMetadata);
         }
@@ -129,7 +133,11 @@ namespace Factorized.Utility {
             machine.countersData = reader.ReadStringIntDictionary();
             machine.valuesData = reader.ReadStringDoubleDictionary();
             machine.propertiesData = reader.ReadStringStringDictionary();
-            machine.currentProcess = reader.ReadMachineOutput();
+            if (reader.ReadBoolean()){
+              machine.currentProcess = reader.ReadMachineOutput();
+            } else {
+              machine.currentProcess = null;
+            }
             machine.inputSlotsMetadata = reader.ReadListOfString();
             machine.outputSlotsMetadata = reader.ReadListOfString();
             return machine;
