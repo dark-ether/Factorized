@@ -13,9 +13,11 @@ using Factorized;
 namespace Factorized.TE.MachineTE{
     public abstract class MachineTE : ModTileEntity
     {
+    
         public Item[] inputSlots {get; protected set;}
         public Item[] outputSlots {get; protected set;}
         public MachineState machineState;
+        //TODO: change process to not have a dictionary per machine
         protected Dictionary<MachineInput,MachineOutput> ProcessIO;
         
         public virtual int Height{get;} = 2;
@@ -25,7 +27,7 @@ namespace Factorized.TE.MachineTE{
         public virtual int NumberOfOutputSlots{get;} = 2;
         public virtual int Width{get;} = 2;
         
-        protected virtual void onPlace(int x,int y){}
+        protected virtual void onPlace(){}
         protected virtual void onProcessFailure(MachineOutput process){}                            
         protected virtual void onProcessNotFound(){}
         protected virtual void onProcessSuccess(MachineInput inputConsumed,MachineOutput outputCreated){}
@@ -42,11 +44,11 @@ namespace Factorized.TE.MachineTE{
         public abstract int ValidTile {get;}
         protected abstract void setupProcessIO();
 
-        protected void setup(int i, int j)
+        protected void setup()
         {
             basicSetup();
             machineSpecificSetup();
-            onPlace(i,j);
+            onPlace();
             setupProcessIO();
         }
 
@@ -108,7 +110,7 @@ namespace Factorized.TE.MachineTE{
             int placedEntity = Place(i - tileOrigin.X, j - tileOrigin.Y);
 
             MachineTE placedMachine = (MachineTE)TileEntity.ByID[placedEntity];
-            placedMachine.setup(i - tileOrigin.X,j - tileOrigin.Y);
+            placedMachine.setup();
 
             return placedEntity;
         }
@@ -120,7 +122,7 @@ namespace Factorized.TE.MachineTE{
                 return true;
             }
             }catch(IndexOutOfRangeException){
-                ModContent.GetInstance<Factorized>().Logger.Warn("tried to acess a tile outside the world");
+                ModContent.GetInstance<Factorized>().Logger.Warn("tried to access a tile outside the world");
                 return false;
             }
             return false;
@@ -144,12 +146,14 @@ namespace Factorized.TE.MachineTE{
         
         public override void NetReceive(BinaryReader reader){
             int length = reader.ReadInt32();
+            inputSlots = new Item[length];
             for(int i = 0; i < length; i++){
                 int type = reader.ReadInt32();
                 int stack = reader.ReadInt32();
                 inputSlots[i] = new Item(type,stack);
             }
             length = reader.ReadInt32();
+            outputSlots = new Item[length];
             for(int i = 0; i < length; i++){
                 int type = reader.ReadInt32();
                 int stack = reader.ReadInt32();
@@ -178,6 +182,7 @@ namespace Factorized.TE.MachineTE{
             {
                 NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
             }
+           setup();
         }
         
         public override void SaveData(TagCompound tag){
@@ -228,6 +233,8 @@ namespace Factorized.TE.MachineTE{
                     }
                 }
             }
+            NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
+            //TODO: change this to only send if changed when notice it is too slow on connection
         }
 
         protected virtual bool canGenerateOutput(MachineOutput currentProcess){

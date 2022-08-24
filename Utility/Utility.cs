@@ -19,6 +19,6 @@ namespace Factorized.Utility
                 }
             }
             return mergedDictionaries;
-        }       
+        }
     }
 }

@@ -42,7 +42,7 @@ namespace Factorized.UI {
                     inputItems.Add(itemSlot);
                     inputPanel.Append(itemSlot);
                 }
-                for(int i = 0; i < machine.outputSlots.Length;i++)
+                for (int i = 0; i < machine.outputSlots.Length;i++)
                 {
                    UIItemSlot itemSlot = new UIItemSlot(machine.outputSlots,i,3);
                     itemSlotConfig(i,machine.outputSlots.Length, itemSlot);

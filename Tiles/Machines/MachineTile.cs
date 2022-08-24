@@ -51,7 +51,8 @@ namespace Factorized.Tiles.Machines{
         {
         }
 
-        public override bool RightClick(int x, int y){
+        public override bool RightClick(int x, int y)
+        {
             Vector2 playerPosition = Main.LocalPlayer.Center;
             Vector2 tilePosition = new(x * 16, y * 16);//remember that tile coordinates are 1/16 world coordinates
             Player player = Main.LocalPlayer;
@@ -91,10 +92,10 @@ namespace Factorized.Tiles.Machines{
             
             if(Vector2.Distance(playerPosition,tilePosition)< 5 *16){
                 UICaller.showMachineUI(x,y);
-            return true;
+                return true;
             }
-                return false;
-            }
+            return false;
+          }
 
         public abstract MachineTE getTileEntity();
 

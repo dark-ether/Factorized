@@ -96,81 +96,11 @@ namespace Factorized.UI{
         {
             return base.IsLoadingEnabled(mod);
         }
-
-        protected override void Register()
-        {
-            base.Register();
-        }
-
-        public override void OnModLoad()
-        {
-            base.OnModLoad();
-        }
-
-        public override void OnWorldLoad()
-        {
-            base.OnWorldLoad();
-        }
         
         public override void OnWorldUnload()
         {
             base.OnWorldUnload();
             machineInterface.SetState(null);
-        }
-
-        public override void ModifyScreenPosition()
-        {
-            base.ModifyScreenPosition();
-        }
-
-        public override void ModifyTransformMatrix(ref SpriteViewMatrix Transform)
-        {
-            base.ModifyTransformMatrix(ref Transform);
-        }
-
-        public override void PreUpdateTime()
-        {
-            base.PreUpdateTime();
-        }
-
-        public override void PostUpdateTime()
-        {
-            base.PostUpdateTime();
-        }
-
-        public override void PreUpdateWorld()
-        {
-            base.PreUpdateWorld();
-        }
-
-        public override void PostUpdateWorld()
-        {
-            base.PostUpdateWorld();
-        }
-       
-        public override void PostDrawInterface(SpriteBatch spriteBatch)
-        {
-            base.PostDrawInterface(spriteBatch);
-        }
-
-        public override void PostDrawFullscreenMap(ref string mouseText)
-        {
-            base.PostDrawFullscreenMap(ref mouseText);
-        }
-
-        public override void PostUpdateInput()
-        {
-            base.PostUpdateInput();
-        }
-
-        public override void PostDrawTiles()
-        {
-            base.PostDrawTiles();
-        }
-
-        public override void TileCountsAvailable(ReadOnlySpan<int> tileCounts)
-        {
-            base.TileCountsAvailable(tileCounts);
         }
     }
 }
