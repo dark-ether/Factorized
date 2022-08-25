@@ -178,11 +178,11 @@ namespace Factorized.TE.MachineTE{
         }
         
         public override void OnNetPlace(){
+           setup();
            if(Main.netMode == NetmodeID.Server)
             {
                 NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
             }
-           setup();
         }
         
         public override void SaveData(TagCompound tag){

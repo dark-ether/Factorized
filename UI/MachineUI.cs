@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Terraria.DataStructures;
 using Factorized.TE.MachineTE;
+using Factorized;
 
 namespace Factorized.UI {
 
@@ -49,7 +50,6 @@ namespace Factorized.UI {
                     outputItems.Add(itemSlot);
                     outputPanel.Append(itemSlot);
                 }
-
             }
         }
 
@@ -62,6 +62,7 @@ namespace Factorized.UI {
                     ,entityInPosition.ID,UICaller.machineX,UICaller.machineY);// should sync my machines
                 }
             }
+            Factorized.Log.Info("called machineSynchronizer");
         }
 
         public override void OnDeactivate()
