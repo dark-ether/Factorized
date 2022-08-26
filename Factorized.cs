@@ -7,12 +7,31 @@ using System.Collections.Generic;
 using System;
 using ReLogic.Content.Sources;
 using System.IO;
-using log4net;
+using Factorized.Net;
 
-namespace Factorized{
+namespace Factorized
+{ 
     public class Factorized : Mod
     {
-        public static ILog Log = ModContent.GetInstance<Factorized>().Logger;
+        public static Factorized mod = ModContent.GetInstance<Factorized>();
+        public override void HandlePacket(BinaryReader reader, int whoami)
+        {
+            MessageType type = (MessageType) reader.ReadInt32();
+            switch(type)
+            {
+                case MessageType.ClientModifyTESlot:
+                    MessageHandler.ClientModifyTESlotHandler(reader,whoami);
+                    break;
+                /*
+                case MessageType.ServerRejectTEModify:
+                    MessageHandler.ServerRejectTEModifyHandler(reader,whoami);
+                    break;
+                */
+                default:
+                    Factorized.mod.Logger.Warn("unknown message type");
+                    break;
+            }
+        }
     }
 }
 

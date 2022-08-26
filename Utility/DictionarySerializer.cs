@@ -7,11 +7,11 @@ namespace Factorized.Utility
     {
         public override Dictionary<T1, T2> Deserialize(TagCompound tag)
         {
-            return new Dictionary<T1,T2>( tag.getList<KeyValuePair<T1,T2>>("dict"));
+            return new Dictionary<T1,T2>( tag.GetList<KeyValuePair<T1,T2>>("dict"));
         }
 
         public override TagCompound Serialize(Dictionary<T1,T2> dict){
-            return new TagCompound {["dict"] = dict.ToList();}
+            return new TagCompound {["dict"] = dict.ToList()};
         }
     }*/
     public class DictionarySerializerStringInt : TagSerializer<Dictionary<string,int>,TagCompound>

@@ -8,8 +8,8 @@ using Terraria.DataStructures;
 using System.Linq;
 using System.IO;
 using Factorized.Utility;
-using Factorized;
-
+using Factorized.Net;
+using Terraria.ObjectData;
 namespace Factorized.TE.MachineTE{
     public abstract class MachineTE : ModTileEntity
     {
@@ -20,19 +20,23 @@ namespace Factorized.TE.MachineTE{
         //TODO: change process to not have a dictionary per machine
         protected Dictionary<MachineInput,MachineOutput> ProcessIO;
         
-        public virtual int Height{get;} = 2;
-        public virtual Point16 MouseRelativePlacePosition{get;} = new Point16(0,0);
-        // point of origin on tile use the same as newTile.origin
+        public virtual int Height{
+            get{return TileObjectData.GetTileData(ValidTile,0).Height;}
+        }
+        public virtual Point16 MouseRelativePlacePosition{
+            get{return TileObjectData.GetTileData(ValidTile,0).Origin;}
+        }
         public virtual int NumberOfInputSlots{get;} = 3;
         public virtual int NumberOfOutputSlots{get;} = 2;
-        public virtual int Width{get;} = 2;
+        public virtual int Width{
+            get{return TileObjectData.GetTileData(ValidTile,0).Width;}
+        }
         
         protected virtual void onPlace(){}
         protected virtual void onProcessFailure(MachineOutput process){}                            
         protected virtual void onProcessNotFound(){}
         protected virtual void onProcessSuccess(MachineInput inputConsumed,MachineOutput outputCreated){}
         protected virtual void onUpdate(){}
-        protected virtual void machineSpecificSetup(){}
         protected virtual bool canProgress(MachineOutput output){return true;}
         protected virtual void onProgress(MachineOutput output){}
         protected virtual void onProcessSuccess(MachineOutput output){}
@@ -47,7 +51,6 @@ namespace Factorized.TE.MachineTE{
         protected void setup()
         {
             basicSetup();
-            machineSpecificSetup();
             onPlace();
             setupProcessIO();
         }
@@ -234,7 +237,6 @@ namespace Factorized.TE.MachineTE{
                 }
             }
             NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
-            //TODO: change this to only send if changed when notice it is too slow on connection
         }
 
         protected virtual bool canGenerateOutput(MachineOutput currentProcess){
@@ -274,6 +276,37 @@ namespace Factorized.TE.MachineTE{
                 }
             }
             return foundItem;
+        }
+
+        public bool TryAddItemToSlot(MachineSlotType slotType, int slotNumber,Item myItem)
+        {
+            switch (slotType) {
+                case MachineSlotType.InputSlot: 
+                    if (inputSlots[slotNumber].IsAir){
+                        inputSlots[slotNumber] = myItem;
+                        return true;
+                    }
+                    else if (inputSlots[slotNumber].type == myItem.type || myItem.IsAir){
+                        inputSlots[slotNumber] = myItem;
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                case MachineSlotType.OutputSlot:
+                    if (outputSlots[slotNumber].IsAir){
+                        outputSlots[slotNumber] = myItem;
+                        return true;
+                    }
+                    else if (outputSlots[slotNumber].type == myItem.type || myItem.IsAir){
+                        outputSlots[slotNumber] = myItem;
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                default: return false;
+            }
         }
     }
 }

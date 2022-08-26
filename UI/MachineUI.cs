@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Terraria.DataStructures;
 using Factorized.TE.MachineTE;
 using Factorized;
+using Factorized.Utility;
 
 namespace Factorized.UI {
 
@@ -32,9 +33,12 @@ namespace Factorized.UI {
             base.OnActivate();
             inputItems = new List<UIItemSlot>();
             outputItems = new List<UIItemSlot>();
-            ItemSlot.OnItemTransferred += machineSynchronizer;
+            ItemSlot.OnItemTransferred += UICaller.machineSynchronizer;
             TileEntity entityInPosition;
-            if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.machineX,UICaller.machineY),out entityInPosition)  && entityInPosition is MachineTE){
+            if(TileEntity.ByPosition.TryGetValue(
+                new Point16(UICaller.machine.Position.X,UICaller.machine.Position.Y),
+                out entityInPosition)  && entityInPosition is MachineTE)
+            {
                 MachineTE machine = (MachineTE)entityInPosition;
                 for (int i = 0; i < machine.inputSlots.Length; i++)
                 {
@@ -53,23 +57,12 @@ namespace Factorized.UI {
             }
         }
 
-        private void machineSynchronizer(ItemSlot.ItemTransferInfo info)
-        {
-            if(info.FromContenxt == ItemSlot.Context.ChestItem || info.ToContext == ItemSlot.Context.ChestItem){
-                TileEntity entityInPosition;
-                if(TileEntity.ByPosition.TryGetValue(new Point16(UICaller.machineX,UICaller.machineY),out entityInPosition)){
-                    NetMessage.SendData(MessageID.TileEntitySharing,-1, -1, null
-                    ,entityInPosition.ID,UICaller.machineX,UICaller.machineY);// should sync my machines
-                }
-            }
-            Factorized.Log.Info("called machineSynchronizer");
-        }
 
         public override void OnDeactivate()
         {
             base.OnDeactivate();
             
-            ItemSlot.OnItemTransferred -= machineSynchronizer;
+            ItemSlot.OnItemTransferred -= UICaller.machineSynchronizer;
             inputItems = null;
             outputItems = null;
             inputPanel.RemoveAllChildren();
@@ -79,7 +72,6 @@ namespace Factorized.UI {
 
         public override void OnInitialize()
         {
-            ModContent.GetInstance<Factorized>().Logger.Debug("onInitialize happened"); 
             inputPanel = new UIPanel();
             inputPanel.Width.Set(300,0f);
             inputPanel.Height.Set(150,0f);

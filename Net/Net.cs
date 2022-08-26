@@ -4,8 +4,9 @@ using Terraria.ModLoader.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using Factorized.Utility;
 
-namespace Factorized.Utility {
+namespace Factorized.Net {
     public static class Net
     {
         public static void Write(this BinaryWriter writer,Dictionary<string,int> dict) 

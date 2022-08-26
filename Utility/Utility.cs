@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-
+using Terraria;
 namespace Factorized.Utility
 {  
     public class Functions
@@ -19,6 +19,15 @@ namespace Factorized.Utility
                 }
             }
             return mergedDictionaries;
+        }
+        public static Item[] cloneItemArray(Item[] array) 
+        {
+            Item[] myClone = new Item[array.Length];
+            for(int i = 0; i < array.Length ; i++) 
+            {
+                myClone[i] = array[i].Clone();
+            }
+            return myClone;
         }
     }
 }

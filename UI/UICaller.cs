@@ -6,6 +6,11 @@ using Microsoft.Xna.Framework;
 using Terraria.Graphics;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using Factorized.TE.MachineTE;
+using Terraria.DataStructures;
+using Factorized.Utility;
+using Factorized.Net;
+using Terraria.ModLoader.IO;
 
 namespace Factorized.UI{
     public class UICaller : ModSystem
@@ -13,8 +18,9 @@ namespace Factorized.UI{
         internal static UserInterface machineInterface; //user interface
         internal static machineUI currentMachineUI; // machine ui in this case a melter
         private static GameTime _lastUpdateUiGameTime;
-        public static int machineX;
-        public static int machineY;
+        public static MachineTE machine;
+        public static Item [] inputCopy;
+        public static Item [] outputCopy;
         private static string visibleUI = "";
         public override string Name => base.Name;
         
@@ -44,7 +50,8 @@ namespace Factorized.UI{
                     if(!Main.playerInventory){
                     hideMachineUI();
                     }
-                    Vector2 melterPosition = new Vector2(machineX*16,machineY*16);//changing to world coordinates
+                    Vector2 melterPosition = new Vector2(UICaller.machine.Position.X*16,
+                        UICaller.machine.Position.Y*16);//changing to world coordinates
                     float distance = Vector2.Distance(melterPosition,Main.LocalPlayer.Center);
                     if(distance > 5*16){//5 tiles
                         hideMachineUI();
@@ -76,14 +83,21 @@ namespace Factorized.UI{
             visibleUI = "machineUI";
             Main.playerInventory = true;
             Tile clickedTile = Main.tile[x,y];//this code finds the topleft tile of a multitile
-            machineX = x - clickedTile.TileFrameX/18;
-            machineY = y - clickedTile.TileFrameY/18;
+            int machineX = x - clickedTile.TileFrameX/18;
+            int machineY = y - clickedTile.TileFrameY/18;
+            TileEntity target;
+            if (!TileEntity.ByPosition.TryGetValue(new Point16(machineX,machineY),out target)) return;
+            if (!(target is MachineTE)) return;
+            machine = (MachineTE) target;
+            inputCopy = Functions.cloneItemArray(machine.inputSlots);
+            outputCopy = Functions.cloneItemArray(machine.outputSlots);
             machineInterface?.SetState(currentMachineUI);
         }
 
         public static void hideMachineUI()
         {
             visibleUI = "";
+            machine = null;
             machineInterface?.SetState(null);
         }
 
@@ -101,6 +115,48 @@ namespace Factorized.UI{
         {
             base.OnWorldUnload();
             machineInterface.SetState(null);
+        }
+        public static void machineSynchronizer(ItemSlot.ItemTransferInfo info)
+        {
+            int? index = null;
+            MachineSlotType? slotType = null;
+            if (info.FromContenxt != ItemSlot.Context.ChestItem 
+            && info.ToContext != ItemSlot.Context.ChestItem)
+            {
+                return;
+            }
+            for (int i=0;i< machine.inputSlots.Length;i++)
+            {
+                if(inputCopy[i].stack != machine.inputSlots[i].stack 
+                    || inputCopy[i].type != machine.inputSlots[i].type)
+                {
+                    index = i;
+                    slotType = MachineSlotType.InputSlot;
+                    break;
+                }
+            }
+            if(index== null) {
+                for(int i=0; i< machine.outputSlots.Length;i++)
+                {
+                    if(outputCopy[i].stack != machine.outputSlots[i].stack 
+                        ||outputCopy[i].type != machine.outputSlots[i].type)
+                    {
+                        index = i;
+                        slotType = MachineSlotType.OutputSlot;
+                        break;
+                    }
+                }
+            }
+            if(index != null ) {
+                switch ((MachineSlotType)slotType) {
+                    case MachineSlotType.InputSlot:
+                        MessageHandler.ClientModifyTESlotSend(machine.ID,
+                            (int)index,machine.inputSlots[(int)index]);
+                        break;
+                }
+            }
+            UICaller.inputCopy = Functions.cloneItemArray(UICaller.machine.inputSlots);
+            UICaller.outputCopy = Functions.cloneItemArray(UICaller.machine.outputSlots);
         }
     }
 }
