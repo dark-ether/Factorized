@@ -16,7 +16,9 @@ namespace Factorized
         public static Factorized mod = ModContent.GetInstance<Factorized>();
         public override void HandlePacket(BinaryReader reader, int whoami)
         {
+            Logger.Info("received packet");
             MessageType type = (MessageType) reader.ReadInt32();
+            Factorized.mod.Logger.Info("received packet");
             switch(type)
             {
                 case MessageType.ClientModifyTESlot:

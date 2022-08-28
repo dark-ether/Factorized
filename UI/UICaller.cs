@@ -50,6 +50,10 @@ namespace Factorized.UI{
                     if(!Main.playerInventory){
                     hideMachineUI();
                     }
+                    if (machine == null) {
+                        hideMachineUI();
+                        return;
+                    }
                     Vector2 melterPosition = new Vector2(UICaller.machine.Position.X*16,
                         UICaller.machine.Position.Y*16);//changing to world coordinates
                     float distance = Vector2.Distance(melterPosition,Main.LocalPlayer.Center);
@@ -92,32 +96,23 @@ namespace Factorized.UI{
             inputCopy = Functions.cloneItemArray(machine.inputSlots);
             outputCopy = Functions.cloneItemArray(machine.outputSlots);
             machineInterface?.SetState(currentMachineUI);
+            Factorized.mod.Logger.Info("Shown Machine ui");
         }
 
         public static void hideMachineUI()
         {
             visibleUI = "";
-            machine = null;
             machineInterface?.SetState(null);
+            machine = null;
         }
 
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-
-        public override bool IsLoadingEnabled(Mod mod)
-        {
-            return base.IsLoadingEnabled(mod);
-        }
-        
         public override void OnWorldUnload()
         {
-            base.OnWorldUnload();
-            machineInterface.SetState(null);
+            machineInterface?.SetState(null);
         }
         public static void machineSynchronizer(ItemSlot.ItemTransferInfo info)
         {
+            Factorized.mod.Logger.InfoFormat("called machine synchronizer with context {0}",info.ToContext);
             int? index = null;
             MachineSlotType? slotType = null;
             if (info.FromContenxt != ItemSlot.Context.ChestItem 
@@ -125,6 +120,7 @@ namespace Factorized.UI{
             {
                 return;
             }
+
             for (int i=0;i< machine.inputSlots.Length;i++)
             {
                 if(inputCopy[i].stack != machine.inputSlots[i].stack 
@@ -132,8 +128,12 @@ namespace Factorized.UI{
                 {
                     index = i;
                     slotType = MachineSlotType.InputSlot;
+                    Factorized.mod.Logger.InfoFormat("Found item with index {0} on input",index);
                     break;
                 }
+                Factorized.mod.Logger.InfoFormat(
+                        "Iterated over input slot {0} it had Item type {1} while the copy had {2}"
+                        ,i,machine.inputSlots[i].type,inputCopy[i].type);
             }
             if(index== null) {
                 for(int i=0; i< machine.outputSlots.Length;i++)
@@ -143,20 +143,33 @@ namespace Factorized.UI{
                     {
                         index = i;
                         slotType = MachineSlotType.OutputSlot;
+                        Factorized.mod.Logger.InfoFormat("Found item with index{0} on output",index);
                         break;
                     }
+                    Factorized.mod.Logger.InfoFormat(
+                        "Iterated over output slot {0} it had Item type {1} while the copy had {2}"
+                       ,i,machine.outputSlots[i].type,outputCopy[i].type);
+
                 }
             }
             if(index != null ) {
+                Factorized.mod.Logger.Info("sent message");
                 switch ((MachineSlotType)slotType) {
                     case MachineSlotType.InputSlot:
                         MessageHandler.ClientModifyTESlotSend(machine.ID,
+                            (int)MachineSlotType.InputSlot,
                             (int)index,machine.inputSlots[(int)index]);
+                        break;
+                    case MachineSlotType.OutputSlot:
+                        MessageHandler.ClientModifyTESlotSend(machine.ID,
+                            (int)MachineSlotType.OutputSlot,
+                            (int)index,machine.outputSlots[(int)index]);
                         break;
                 }
             }
             UICaller.inputCopy = Functions.cloneItemArray(UICaller.machine.inputSlots);
             UICaller.outputCopy = Functions.cloneItemArray(UICaller.machine.outputSlots);
+            Factorized.mod.Logger.Info("went until end of machine synchronizer");
         }
     }
 }

@@ -132,17 +132,8 @@ namespace Factorized.TE.MachineTE{
         }
 
         public override void LoadData(TagCompound tag){
-            basicSetup();
-            List<Item> previousInputSlots =  tag.Get<List<Item>>("inputSlots");
-            List<Item> previousOutputSlots = tag.Get<List<Item>>("outputSlots");
-            for(int i = 0 ; i < previousInputSlots.Count;i++)
-            {
-                inputSlots[i] = previousInputSlots.ElementAt<Item>(i);
-            }            
-            for(int i = 0 ; i < previousOutputSlots.Count;i++)
-            {
-                outputSlots[i] = previousOutputSlots.ElementAt<Item>(i);
-            }
+            inputSlots = tag.Get<Item[]>("inputSlots");
+            outputSlots = tag.Get<Item[]>("outputSlots");
             machineState = new (tag.Get<MachineState>("machineState"));
             setupProcessIO();
         }
@@ -151,16 +142,12 @@ namespace Factorized.TE.MachineTE{
             int length = reader.ReadInt32();
             inputSlots = new Item[length];
             for(int i = 0; i < length; i++){
-                int type = reader.ReadInt32();
-                int stack = reader.ReadInt32();
-                inputSlots[i] = new Item(type,stack);
+                inputSlots[i] = ItemIO.Receive(reader,true);
             }
             length = reader.ReadInt32();
             outputSlots = new Item[length];
             for(int i = 0; i < length; i++){
-                int type = reader.ReadInt32();
-                int stack = reader.ReadInt32();
-                outputSlots[i] = new Item(type,stack);
+                outputSlots[i] = ItemIO.Receive(reader,true);
             }
             machineState = reader.ReadMachineState();
         }
@@ -168,16 +155,13 @@ namespace Factorized.TE.MachineTE{
         public override void NetSend(BinaryWriter writer){
             writer.Write(inputSlots.Length);
             foreach(Item item in inputSlots){
-                writer.Write(item.type);
-                writer.Write(item.stack);
+                ItemIO.Send(item,writer,true);
             }
             writer.Write(outputSlots.Length);
             foreach(Item item in outputSlots){
-                writer.Write(item.type);
-                writer.Write(item.stack);
+                ItemIO.Send(item,writer,true);
             }
-            writer.Write(machineState);
-            
+            writer.Write(machineState); 
         }
         
         public override void OnNetPlace(){
@@ -189,9 +173,9 @@ namespace Factorized.TE.MachineTE{
         }
         
         public override void SaveData(TagCompound tag){
-            tag.Set("inputSlots",inputSlots.ToList());
-            tag.Set("outputSlots",outputSlots.ToList());
-            tag.Set("machineState",machineState);
+            tag.Add("inputSlots",inputSlots);
+            tag.Add("outputSlots",outputSlots);
+            tag.Add("machineState",machineState);
         }
         //todo : change net messages again
 

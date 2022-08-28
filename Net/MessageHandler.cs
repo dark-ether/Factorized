@@ -14,6 +14,7 @@ namespace Factorized.Net
     {
         public static void ClientModifyTESlotHandler(BinaryReader reader,int whoami)
         {
+            Factorized.mod.Logger.Info("received clientModifyTESLot message");
             if (Main.netMode != NetmodeID.Server)
             {
                 Factorized.mod.Logger.Warn("received message to server outside the server");
@@ -42,7 +43,7 @@ namespace Factorized.Net
                 //TODO: fix edge case where players remove/add items at the same time
             }
         }
-        public static void ClientModifyTESlotSend(int TEID, int slotNumber,Item myItem)
+        public static void ClientModifyTESlotSend(int TEID,int slotType ,int slotNumber,Item myItem)
         {
             if (Main.netMode != NetmodeID.MultiplayerClient)
             {
@@ -51,9 +52,11 @@ namespace Factorized.Net
             ModPacket packet = Factorized.mod.GetPacket();
             packet.Write((int)MessageType.ClientModifyTESlot);
             packet.Write(TEID);
+            packet.Write(slotType);
             packet.Write(slotNumber);
             ItemIO.Send(myItem,packet,true);
             packet.Send();
+            Factorized.mod.Logger.Info("went until end of clientModifyTESLotSend");
         }
     }
 }

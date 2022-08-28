@@ -30,7 +30,7 @@ namespace Factorized.UI {
 
         public override void OnActivate()
         {
-            base.OnActivate();
+            Factorized.mod.Logger.Info("Called OnActivate of Machine UI");
             inputItems = new List<UIItemSlot>();
             outputItems = new List<UIItemSlot>();
             ItemSlot.OnItemTransferred += UICaller.machineSynchronizer;

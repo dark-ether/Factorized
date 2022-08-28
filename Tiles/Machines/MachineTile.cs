@@ -38,7 +38,8 @@ namespace Factorized.Tiles.Machines{
         
         public override bool CanKillTile(int i,int j,ref bool blockDamaged)
         {
-            return !getTileEntityInLocation(i,j).hasItems();
+            return !getTileEntityInLocation(i,j).hasItems() 
+                && !getTileEntityInLocation(i,j).machineState.IsProcessing();
         }
 
         public virtual MachineTE getTileEntityInLocation(int i ,int j)
