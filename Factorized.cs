@@ -14,6 +14,7 @@ namespace Factorized
     public class Factorized : Mod
     {
         public static Factorized mod = ModContent.GetInstance<Factorized>();
+        public delegate ref Item ItemReferrer();
         public override void HandlePacket(BinaryReader reader, int whoami)
         {
             Logger.Info("received packet");

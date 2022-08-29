@@ -13,7 +13,6 @@ using Terraria.ObjectData;
 namespace Factorized.TE.MachineTE{
     public abstract class MachineTE : ModTileEntity
     {
-    
         public Item[] inputSlots {get; protected set;}
         public Item[] outputSlots {get; protected set;}
         public MachineState machineState;
@@ -178,7 +177,7 @@ namespace Factorized.TE.MachineTE{
             tag.Add("machineState",machineState);
         }
         //todo : change net messages again
-
+        //TODO: change update so different stacks of the same item aren't consumed simultaneously
         public override void Update(){
             onUpdate();
             if(!machineState.IsProcessing())
@@ -291,6 +290,14 @@ namespace Factorized.TE.MachineTE{
                     }
                 default: return false;
             }
+        }
+        public Factorized.ItemReferrer InputSlotRef(int i) 
+        {
+            return ()=>{return ref inputSlots[i];};
+        }
+        public Factorized.ItemReferrer OutputSlotRef(int i )
+        {
+            return () => {return ref outputSlots[i];};
         }
     }
 }

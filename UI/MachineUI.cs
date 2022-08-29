@@ -14,14 +14,14 @@ namespace Factorized.UI {
 
     class machineUI : UIState
     {
-        
-        protected List<UIItemSlot> inputItems;
-        protected List<UIItemSlot> outputItems;
+
+        protected List<FItemSlot> inputItems;
+        protected List<FItemSlot> outputItems;
         protected UIPanel inputPanel;
         protected UIPanel outputPanel;
         protected UIPanel processingPanel;
 
-        private void itemSlotConfig(int index,int numberofSlots, UIItemSlot itemSlot){
+        private void itemSlotConfig(int index,int numberofSlots, FItemSlot itemSlot){
             itemSlot.Height.Set(30,0f);
             itemSlot.Width.Set(30,0f);
             itemSlot.HAlign = ((float)index)/((float)numberofSlots);
@@ -30,30 +30,23 @@ namespace Factorized.UI {
 
         public override void OnActivate()
         {
-            Factorized.mod.Logger.Info("Called OnActivate of Machine UI");
-            inputItems = new List<UIItemSlot>();
-            outputItems = new List<UIItemSlot>();
-            ItemSlot.OnItemTransferred += UICaller.machineSynchronizer;
-            TileEntity entityInPosition;
-            if(TileEntity.ByPosition.TryGetValue(
-                new Point16(UICaller.machine.Position.X,UICaller.machine.Position.Y),
-                out entityInPosition)  && entityInPosition is MachineTE)
+            inputItems = new List<FItemSlot>();
+            outputItems = new List<FItemSlot>();
+            FItemSlot.AfterItemTransfer += UICaller.machineSynchronizer;
+            ref MachineTE machine = ref UICaller.machine;
+            for (int i = 0; i < machine.inputSlots.Length; i++)
             {
-                MachineTE machine = (MachineTE)entityInPosition;
-                for (int i = 0; i < machine.inputSlots.Length; i++)
-                {
-                    UIItemSlot itemSlot = new (machine.inputSlots,i,3);
-                    itemSlotConfig(i,machine.outputSlots.Length,itemSlot);
-                    inputItems.Add(itemSlot);
-                    inputPanel.Append(itemSlot);
-                }
-                for (int i = 0; i < machine.outputSlots.Length;i++)
-                {
-                   UIItemSlot itemSlot = new UIItemSlot(machine.outputSlots,i,3);
-                    itemSlotConfig(i,machine.outputSlots.Length, itemSlot);
-                    outputItems.Add(itemSlot);
-                    outputPanel.Append(itemSlot);
-                }
+                FItemSlot itemSlot = new (machine.InputSlotRef(i),3);
+                itemSlotConfig(i,machine.inputSlots.Length,itemSlot);
+                inputItems.Add(itemSlot);
+                inputPanel.Append(itemSlot);
+            }
+            for (int i = 0; i < machine.outputSlots.Length;i++)
+            {
+               FItemSlot itemSlot = new (machine.OutputSlotRef(i),3);
+                itemSlotConfig(i,machine.outputSlots.Length, itemSlot);
+                outputItems.Add(itemSlot);
+                outputPanel.Append(itemSlot);
             }
         }
 
@@ -61,8 +54,8 @@ namespace Factorized.UI {
         public override void OnDeactivate()
         {
             base.OnDeactivate();
-            
-            ItemSlot.OnItemTransferred -= UICaller.machineSynchronizer;
+
+            FItemSlot.AfterItemTransfer -= UICaller.machineSynchronizer;
             inputItems = null;
             outputItems = null;
             inputPanel.RemoveAllChildren();
@@ -77,17 +70,17 @@ namespace Factorized.UI {
             inputPanel.Height.Set(150,0f);
             inputPanel.VAlign = 0.39f;
             inputPanel.HAlign = 0.1f;
-            
+
             Append(inputPanel);
 
-            processingPanel = new UIPanel(); 
+            processingPanel = new UIPanel();
             processingPanel.Width.Set(300,0f);
             processingPanel.Height.Set(200,0f);
             processingPanel.HAlign = 0.1f;
             processingPanel.VAlign = 0.65f;
-    
+
             Append(processingPanel);
-            
+
             outputPanel = new UIPanel();
             outputPanel.Width.Set(300,0);
             outputPanel.Height.Set(150,0);
@@ -95,7 +88,7 @@ namespace Factorized.UI {
             outputPanel.VAlign = 0.88f;
             Append(outputPanel);
         }
-        
+
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);

@@ -6,4 +6,5 @@ factorized is a terraria mod that aims to make automation possible and necessary
 ## Plans
 
 1. make the example machine work in multiplayer
-    todo do that i need to send the packet correctly however itemTransferInfo doesn't have a 
+2. add new pylons
+3. add bags

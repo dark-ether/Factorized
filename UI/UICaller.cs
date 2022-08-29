@@ -23,7 +23,7 @@ namespace Factorized.UI{
         public static Item [] outputCopy;
         private static string visibleUI = "";
         public override string Name => base.Name;
-        
+
         public override void Load()
         {
             if(!Main.dedServ){
@@ -33,14 +33,14 @@ namespace Factorized.UI{
                 currentMachineUI.Initialize();
             }
         }
-        
+
         public override void Unload()
         {
             currentMachineUI = null;// unloads the ui
             machineInterface = null;
 
         }
-        
+
         public override void UpdateUI(GameTime gameTime)
         {
             _lastUpdateUiGameTime = gameTime;
@@ -96,7 +96,6 @@ namespace Factorized.UI{
             inputCopy = Functions.cloneItemArray(machine.inputSlots);
             outputCopy = Functions.cloneItemArray(machine.outputSlots);
             machineInterface?.SetState(currentMachineUI);
-            Factorized.mod.Logger.Info("Shown Machine ui");
         }
 
         public static void hideMachineUI()
@@ -110,50 +109,35 @@ namespace Factorized.UI{
         {
             machineInterface?.SetState(null);
         }
-        public static void machineSynchronizer(ItemSlot.ItemTransferInfo info)
+        public static void machineSynchronizer(FItemSlot target)
         {
-            Factorized.mod.Logger.InfoFormat("called machine synchronizer with context {0}",info.ToContext);
             int? index = null;
             MachineSlotType? slotType = null;
-            if (info.FromContenxt != ItemSlot.Context.ChestItem 
-            && info.ToContext != ItemSlot.Context.ChestItem)
-            {
-                return;
-            }
 
             for (int i=0;i< machine.inputSlots.Length;i++)
             {
-                if(inputCopy[i].stack != machine.inputSlots[i].stack 
+                if(inputCopy[i].stack != machine.inputSlots[i].stack
                     || inputCopy[i].type != machine.inputSlots[i].type)
                 {
                     index = i;
                     slotType = MachineSlotType.InputSlot;
-                    Factorized.mod.Logger.InfoFormat("Found item with index {0} on input",index);
                     break;
                 }
-                Factorized.mod.Logger.InfoFormat(
-                        "Iterated over input slot {0} it had Item type {1} while the copy had {2}"
-                        ,i,machine.inputSlots[i].type,inputCopy[i].type);
             }
             if(index== null) {
                 for(int i=0; i< machine.outputSlots.Length;i++)
                 {
-                    if(outputCopy[i].stack != machine.outputSlots[i].stack 
+                    if(outputCopy[i].stack != machine.outputSlots[i].stack
                         ||outputCopy[i].type != machine.outputSlots[i].type)
                     {
                         index = i;
                         slotType = MachineSlotType.OutputSlot;
-                        Factorized.mod.Logger.InfoFormat("Found item with index{0} on output",index);
                         break;
                     }
-                    Factorized.mod.Logger.InfoFormat(
-                        "Iterated over output slot {0} it had Item type {1} while the copy had {2}"
-                       ,i,machine.outputSlots[i].type,outputCopy[i].type);
 
                 }
             }
             if(index != null ) {
-                Factorized.mod.Logger.Info("sent message");
                 switch ((MachineSlotType)slotType) {
                     case MachineSlotType.InputSlot:
                         MessageHandler.ClientModifyTESlotSend(machine.ID,
@@ -169,7 +153,6 @@ namespace Factorized.UI{
             }
             UICaller.inputCopy = Functions.cloneItemArray(UICaller.machine.inputSlots);
             UICaller.outputCopy = Functions.cloneItemArray(UICaller.machine.outputSlots);
-            Factorized.mod.Logger.Info("went until end of machine synchronizer");
         }
     }
 }
