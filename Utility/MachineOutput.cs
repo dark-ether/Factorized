@@ -82,10 +82,11 @@ namespace Factorized.Utility
                     if(input[i].type ==item.Item1)
                     {
                         input[i].stack -= item.Item2;
-                    }
-                    if(input[i].stack <= 0)
-                    {
-                        input[i] = new Item();
+                        if(input[i].stack <= 0)
+                        {
+                            input[i] = new Item();
+                        }
+                        break;
                     }
                 }
             }

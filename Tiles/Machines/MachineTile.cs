@@ -38,12 +38,13 @@ namespace Factorized.Tiles.Machines{
         
         public override bool CanKillTile(int i,int j,ref bool blockDamaged)
         {
-            return !getTileEntityInLocation(i,j).hasItems() 
+            return !(getTileEntityInLocation(i,j) ==null) && !getTileEntityInLocation(i,j).hasItems() 
                 && !getTileEntityInLocation(i,j).machineState.IsProcessing();
         }
 
         public virtual MachineTE getTileEntityInLocation(int i ,int j)
         {
+            if(!TileEntity.ByPosition.ContainsKey(TileUtils.GetTileOrigin(i,j))) return null;
             MachineTE tileEntity = (MachineTE) TileEntity.ByPosition[TileUtils.GetTileOrigin(i,j)];
             return tileEntity;
         }

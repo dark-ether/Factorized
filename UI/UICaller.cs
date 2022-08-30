@@ -16,7 +16,7 @@ namespace Factorized.UI{
     public class UICaller : ModSystem
     {
         internal static UserInterface machineInterface; //user interface
-        internal static machineUI currentMachineUI; // machine ui in this case a melter
+        internal static MachineUI currentMachineUI; // machine ui in this case a melter
         private static GameTime _lastUpdateUiGameTime;
         public static MachineTE machine;
         public static Item [] inputCopy;
@@ -29,7 +29,7 @@ namespace Factorized.UI{
             if(!Main.dedServ){
                 machineInterface = new UserInterface();//initializes user interface
 
-                currentMachineUI = new machineUI();
+                currentMachineUI = new MachineUI();
                 currentMachineUI.Initialize();
             }
         }
@@ -61,7 +61,6 @@ namespace Factorized.UI{
                         hideMachineUI();
                     }
                 }
-
             }
         }
 
@@ -93,8 +92,8 @@ namespace Factorized.UI{
             if (!TileEntity.ByPosition.TryGetValue(new Point16(machineX,machineY),out target)) return;
             if (!(target is MachineTE)) return;
             machine = (MachineTE) target;
-            inputCopy = Functions.cloneItemArray(machine.inputSlots);
-            outputCopy = Functions.cloneItemArray(machine.outputSlots);
+            inputCopy = Lib.cloneItemArray(machine.inputSlots);
+            outputCopy = Lib.cloneItemArray(machine.outputSlots);
             machineInterface?.SetState(currentMachineUI);
         }
 
@@ -113,7 +112,6 @@ namespace Factorized.UI{
         {
             int? index = null;
             MachineSlotType? slotType = null;
-
             for (int i=0;i< machine.inputSlots.Length;i++)
             {
                 if(inputCopy[i].stack != machine.inputSlots[i].stack
@@ -151,8 +149,8 @@ namespace Factorized.UI{
                         break;
                 }
             }
-            UICaller.inputCopy = Functions.cloneItemArray(UICaller.machine.inputSlots);
-            UICaller.outputCopy = Functions.cloneItemArray(UICaller.machine.outputSlots);
+            UICaller.inputCopy = Lib.cloneItemArray(UICaller.machine.inputSlots);
+            UICaller.outputCopy = Lib.cloneItemArray(UICaller.machine.outputSlots);
         }
     }
 }

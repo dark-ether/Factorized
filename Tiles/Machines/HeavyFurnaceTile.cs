@@ -4,9 +4,10 @@ using Terraria.DataStructures;
 using Factorized.Utility;
 using Factorized.TE.MachineTE;
 
-namespace Factorized.Tiles.Machines{
-	  public class HeavyFurnaceTile : MachineTile
-	  {
+namespace Factorized.Tiles.Machines
+{
+    public class HeavyFurnaceTile : MachineTile
+    {
         
         public override void KillMultiTile(int i, int j ,int FrameX , int FrameY)
         {
@@ -15,9 +16,6 @@ namespace Factorized.Tiles.Machines{
             //remember world coordinates are 16* tile coordinates
 
         }
-
         public override MachineTE getTileEntity() => ModContent.GetInstance<HeavyFurnaceTE>();
-        
-
     }
 }

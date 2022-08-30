@@ -10,6 +10,8 @@ using System.IO;
 using Factorized.Utility;
 using Factorized.Net;
 using Terraria.ObjectData;
+using Factorized.UI;
+
 namespace Factorized.TE.MachineTE{
     public abstract class MachineTE : ModTileEntity
     {
@@ -30,7 +32,7 @@ namespace Factorized.TE.MachineTE{
         public virtual int Width{
             get{return TileObjectData.GetTileData(ValidTile,0).Width;}
         }
-        
+
         protected virtual void onPlace(){}
         protected virtual void onProcessFailure(MachineOutput process){}                            
         protected virtual void onProcessNotFound(){}
@@ -46,6 +48,10 @@ namespace Factorized.TE.MachineTE{
 
         public abstract int ValidTile {get;}
         protected abstract void setupProcessIO();
+
+        public MachineTE()
+        {
+        }
 
         protected void setup()
         {
@@ -139,18 +145,23 @@ namespace Factorized.TE.MachineTE{
         
         public override void NetReceive(BinaryReader reader){
             int length = reader.ReadInt32();
-            inputSlots = new Item[length];
+            if(inputSlots == null) inputSlots = new Item[length];
             for(int i = 0; i < length; i++){
                 inputSlots[i] = ItemIO.Receive(reader,true);
             }
             length = reader.ReadInt32();
-            outputSlots = new Item[length];
+            if(outputSlots == null) outputSlots = new Item[length];
             for(int i = 0; i < length; i++){
                 outputSlots[i] = ItemIO.Receive(reader,true);
             }
             machineState = reader.ReadMachineState();
+            //this is probably a bad idea, static variables are just another name to global variables
+            if(UICaller.machine == null) return;
+            UICaller.machine.inputSlots = inputSlots;
+            UICaller.machine.outputSlots = outputSlots;
+            UICaller.machine.machineState = machineState;
         }
-        //todo change net send and net receive
+        //TODO: change net send and net receive
         public override void NetSend(BinaryWriter writer){
             writer.Write(inputSlots.Length);
             foreach(Item item in inputSlots){
@@ -176,7 +187,8 @@ namespace Factorized.TE.MachineTE{
             tag.Add("outputSlots",outputSlots);
             tag.Add("machineState",machineState);
         }
-        //todo : change net messages again
+
+        //TODO: change net messages again
         //TODO: change update so different stacks of the same item aren't consumed simultaneously
         public override void Update(){
             onUpdate();
@@ -293,9 +305,9 @@ namespace Factorized.TE.MachineTE{
         }
         public Factorized.ItemReferrer InputSlotRef(int i) 
         {
-            return ()=>{return ref inputSlots[i];};
+            return () => {return ref inputSlots[i];};
         }
-        public Factorized.ItemReferrer OutputSlotRef(int i )
+        public Factorized.ItemReferrer OutputSlotRef(int i)
         {
             return () => {return ref outputSlots[i];};
         }

@@ -4,7 +4,7 @@ using System.IO;
 using Terraria;
 namespace Factorized.Utility
 {  
-    public class Functions
+    public static class Lib
     {
         public static Dictionary<T1,T2> mergeDictionariesNoRepeats<T1,T2>(IEnumerable<Dictionary<T1,T2>> dicts)
         {

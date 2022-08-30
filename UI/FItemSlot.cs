@@ -4,6 +4,7 @@ using Terraria.UI;
 using Microsoft.Xna.Framework;
 using System;
 using Factorized;
+
 namespace Factorized.UI
 {
     public class FItemSlot : UIElement
@@ -11,7 +12,7 @@ namespace Factorized.UI
         public Factorized.ItemReferrer getItem;
         public int itemContext;
         public delegate void ITEvent(FItemSlot target);
-        public static event ITEvent AfterItemTransfer;
+        public static event ITEvent PIT;
         public bool pressedRightClick = false;
         public int rightClickHoldTicks = 0;
         public int timer = 0;
@@ -23,10 +24,11 @@ namespace Factorized.UI
 
         //PIT Stands for Post Item Transfer
         public void RaisePITEvent() {
-            if(FItemSlot.AfterItemTransfer != null)
+            if(FItemSlot.PIT != null)
             {
-                FItemSlot.AfterItemTransfer(this);
+                FItemSlot.PIT(this);
             }
+            Recalculate();
         }
 
         protected override void DrawSelf(SpriteBatch spriteBatch)

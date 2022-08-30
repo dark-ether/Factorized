@@ -14,22 +14,18 @@ namespace Factorized.Net
     {
         public static void ClientModifyTESlotHandler(BinaryReader reader,int whoami)
         {
-            Factorized.mod.Logger.Info("received clientModifyTESLot message");
             if (Main.netMode != NetmodeID.Server)
             {
-                Factorized.mod.Logger.Warn("received message to server outside the server");
                 return;
             }
             int id = reader.ReadInt32();
             TileEntity target;
             if(!TileEntity.ByID.TryGetValue(id, out target))
             {
-                Factorized.mod.Logger.Warn("tried to update non-existent tile entity");
                 return;
             }
             if (!(target is MachineTE))
             {
-                Factorized.mod.Logger.Warn("tried to update machine but tile entity isn't machine");
                 return;
             }
             MachineTE interacted = (MachineTE)target;
@@ -56,7 +52,6 @@ namespace Factorized.Net
             packet.Write(slotNumber);
             ItemIO.Send(myItem,packet,true);
             packet.Send();
-            Factorized.mod.Logger.Info("went until end of clientModifyTESLotSend");
         }
     }
 }
