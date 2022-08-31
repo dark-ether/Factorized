@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Factorized.UI;
 using Factorized.TE.MachineTE;
 using Factorized.Utility;
+using System.Linq;
 
 namespace Factorized.Tiles.Machines{
     public abstract class MachineTile : ModTile
@@ -28,24 +29,24 @@ namespace Factorized.Tiles.Machines{
             TileObjectData.newTile.LavaPlacement = LiquidPlacement.Allowed;
             TileObjectData.newTile.Origin = new Point16(0,0);
             modifyObjectData();
-            MachineTE myMachine = getTileEntity();//get tile entity makes the tile call the correct tile entity
+            BaseMachineTE myMachine = getTileEntity();//get tile entity makes the tile call the correct tile entity
             if(myMachine is not null){
                 TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(myMachine.Hook_AfterPlacement
                 ,-1,0,false);
             }
             TileObjectData.addTile(Type);
         }
-        
+        /* 
         public override bool CanKillTile(int i,int j,ref bool blockDamaged)
         {
             return !(getTileEntityInLocation(i,j) ==null) && !getTileEntityInLocation(i,j).hasItems() 
                 && !getTileEntityInLocation(i,j).machineState.IsProcessing();
         }
-
-        public virtual MachineTE getTileEntityInLocation(int i ,int j)
+        */
+        public virtual BaseMachineTE getTileEntityInLocation(int i ,int j)
         {
             if(!TileEntity.ByPosition.ContainsKey(TileUtils.GetTileOrigin(i,j))) return null;
-            MachineTE tileEntity = (MachineTE) TileEntity.ByPosition[TileUtils.GetTileOrigin(i,j)];
+            BaseMachineTE tileEntity = (BaseMachineTE) TileEntity.ByPosition[TileUtils.GetTileOrigin(i,j)];
             return tileEntity;
         }
 
@@ -97,9 +98,23 @@ namespace Factorized.Tiles.Machines{
                 return true;
             }
             return false;
-          }
+        }
 
-        public abstract MachineTE getTileEntity();
+        public override void KillMultiTile(int i, int j ,int FrameX , int FrameY)
+        {
+            Point16 tileOrigin = TileUtils.GetTileOrigin(i,j);
+            Item.NewItem(new EntitySource_TileBreak(i, j),i * 16 , j * 16,48,32,getItemType());
+            BaseMachineTE dead = getTileEntityInLocation(i,j);
+            foreach(var item in dead.inputSlots.Concat(dead.outputSlots))
+            {
+                if(!item.IsAir)
+                {
+                    Item.NewItem(new EntitySource_TileBreak(i,j),i*16,j*16,48,32,item.type,item.stack);
+                }
+            }
 
+        }
+        public abstract BaseMachineTE getTileEntity();
+        public abstract int getItemType();
     }
 }

@@ -24,11 +24,11 @@ namespace Factorized.Net
             {
                 return;
             }
-            if (!(target is MachineTE))
+            if (!(target is BaseMachineTE))
             {
                 return;
             }
-            MachineTE interacted = (MachineTE)target;
+            BaseMachineTE interacted = (BaseMachineTE)target;
             MachineSlotType slotType = (MachineSlotType)reader.ReadInt32();
             int slotNumber = reader.ReadInt32();
             Item myItem = ItemIO.Receive(reader, true);

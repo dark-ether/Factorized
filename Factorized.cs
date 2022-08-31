@@ -33,5 +33,7 @@ namespace Factorized
             }
         }
     }
+    public delegate float FloatReferrer();
+    public delegate int IntReferrer();
 }
 

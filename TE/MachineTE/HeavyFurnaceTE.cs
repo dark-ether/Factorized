@@ -11,7 +11,7 @@ using Terraria.ID;
 using System.Collections.Generic;
 
 namespace Factorized.TE.MachineTE{
-    public class HeavyFurnaceTE : MachineTE {
+    public class HeavyFurnaceTE : BaseMachineTE {
         public override int ValidTile => ModContent.TileType<HeavyFurnaceTile>();
         protected override void setupProcessIO()
         {
@@ -25,6 +25,7 @@ namespace Factorized.TE.MachineTE{
             output.itemsToRemove.Add(item);
             item = (ItemID.Glass,2);
             output.itemsToAdd.Add(item);
+            output.processingTime = 60*5;
             ProcessIO = new ();
             ProcessIO[input] = output;
         }

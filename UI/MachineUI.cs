@@ -9,6 +9,8 @@ using Terraria.DataStructures;
 using Factorized.TE.MachineTE;
 using Factorized;
 using Factorized.Utility;
+using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 
 namespace Factorized.UI {
 
@@ -20,7 +22,10 @@ namespace Factorized.UI {
         protected UIPanel inputPanel;
         protected UIPanel outputPanel;
         protected UIPanel processingPanel;
-
+        protected Asset<Texture2D> fullFire;
+        protected Asset<Texture2D> emptyFire;
+        public bool gotEmptyFire;
+        public bool gotFullfire;
         private void itemSlotConfig(int index,int numberofSlots, FItemSlot itemSlot){
             itemSlot.Height.Set(30,0f);
             itemSlot.Width.Set(30,0f);
@@ -33,7 +38,7 @@ namespace Factorized.UI {
             inputItems = new List<FItemSlot>();
             outputItems = new List<FItemSlot>();
             FItemSlot.PIT += UICaller.machineSynchronizer;
-            ref MachineTE machine = ref UICaller.machine;
+            ref BaseMachineTE machine = ref UICaller.machine;
             for (int i = 0; i < machine.inputSlots.Length; i++)
             {
                 FItemSlot itemSlot = new (machine.InputSlotRef(i),3);
@@ -41,6 +46,26 @@ namespace Factorized.UI {
                 inputItems.Add(itemSlot);
                 inputPanel.Append(itemSlot);
             }
+            if(gotEmptyFire && gotFullfire)
+            {
+                var FireImage = new FProgressBar(fullFire,emptyFire,
+                    () => {
+                    if(UICaller.machine?.machineState.currentProcess?.processingTime== null)
+                        return 0;
+                    else
+                    return (int)UICaller.machine?.machineState.timer;
+                    },
+                    () => {
+                    var limit = UICaller.machine?.machineState.currentProcess?.processingTime;
+                    if(limit == null) return 1; else return (int)limit;});
+                FireImage.Height.Set(40,0f);
+                FireImage.Width.Set(40,0f);
+                FireImage.HAlign = 0.5f;
+                FireImage.VAlign = 0.5f;
+                Factorized.mod.Logger.InfoFormat("loaded image with:{0}",FireImage);
+                processingPanel.Append(FireImage);
+            }
+
             for (int i = 0; i < machine.outputSlots.Length;i++)
             {
                 FItemSlot itemSlot = new (machine.OutputSlotRef(i),3);
@@ -78,6 +103,10 @@ namespace Factorized.UI {
             processingPanel.Height.Set(200,0f);
             processingPanel.HAlign = 0.1f;
             processingPanel.VAlign = 0.65f;
+
+            gotFullfire = ModContent.RequestIfExists<Texture2D>("Factorized/UI/full_fire",out fullFire, AssetRequestMode.ImmediateLoad);
+            gotEmptyFire = ModContent.RequestIfExists<Texture2D>("Factorized/UI/empty_fire",out emptyFire,AssetRequestMode.ImmediateLoad);
+
 
             Append(processingPanel);
 
