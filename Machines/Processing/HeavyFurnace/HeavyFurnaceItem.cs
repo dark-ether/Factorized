@@ -3,7 +3,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace Factorized.Items.Placeables
+namespace Factorized.Machines.Processing.HeavyFurnace
 {
 	  public class HeavyFurnaceItem : ModItem
 	  {
@@ -21,7 +21,7 @@ namespace Factorized.Items.Placeables
 			    Item.value = 10000;
 			    Item.rare = 6;
 			    Item.autoReuse = true;
-                Item.createTile = ModContent.TileType<Tiles.Machines.HeavyFurnaceTile>();
+                Item.createTile = ModContent.TileType<Machines.Processing.HeavyFurnace.HeavyFurnaceTile>();
                 Item.useAnimation = 15;
                 Item.useTime = 15;
                 Item.maxStack = 999;
@@ -31,6 +31,8 @@ namespace Factorized.Items.Placeables
 
 		    public override void AddRecipes()
 		    {
+                //TODO: add recipes and create tech tree;
+                /*
 			    Recipe recipe = CreateRecipe();
 			    recipe.AddIngredient(ItemID.DemoniteBar,100);
                 recipe.AddIngredient(ItemID.StoneBlock,1000);
@@ -38,7 +40,7 @@ namespace Factorized.Items.Placeables
                 Recipe recipe2 = CreateRecipe();
                 recipe2.AddIngredient(ItemID.CrimtaneBar,100);
                 recipe2.AddIngredient(ItemID.StoneBlock,1000);
-                recipe2.Register();
+                recipe2.Register();*/
 		    }
 	  }
 }

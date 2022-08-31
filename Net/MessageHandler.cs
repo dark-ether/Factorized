@@ -5,7 +5,7 @@ using Terraria.ModLoader.IO;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Factorized;
-using Factorized.TE.MachineTE;
+using Factorized.Machines;
 using Factorized.Utility;
 
 namespace Factorized.Net 
@@ -24,11 +24,11 @@ namespace Factorized.Net
             {
                 return;
             }
-            if (!(target is BaseMachineTE))
+            if (!(target is MachineTE))
             {
                 return;
             }
-            BaseMachineTE interacted = (BaseMachineTE)target;
+            MachineTE interacted = (MachineTE)target;
             MachineSlotType slotType = (MachineSlotType)reader.ReadInt32();
             int slotNumber = reader.ReadInt32();
             Item myItem = ItemIO.Receive(reader, true);

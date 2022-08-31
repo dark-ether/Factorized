@@ -6,11 +6,12 @@ using Microsoft.Xna.Framework;
 using Terraria.Graphics;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using Factorized.TE.MachineTE;
+using Factorized.Machines;
 using Terraria.DataStructures;
 using Factorized.Utility;
 using Factorized.Net;
 using Terraria.ModLoader.IO;
+using Factorized.UI.Elements;
 
 namespace Factorized.UI{
     public class UICaller : ModSystem
@@ -18,7 +19,7 @@ namespace Factorized.UI{
         internal static UserInterface machineInterface; //user interface
         internal static MachineUI currentMachineUI; // machine ui in this case a melter
         private static GameTime _lastUpdateUiGameTime;
-        public static BaseMachineTE machine;
+        public static MachineTE machine;
         public static Item [] inputCopy;
         public static Item [] outputCopy;
         private static string visibleUI = "";
@@ -90,8 +91,8 @@ namespace Factorized.UI{
             int machineY = y - clickedTile.TileFrameY/18;
             TileEntity target;
             if (!TileEntity.ByPosition.TryGetValue(new Point16(machineX,machineY),out target)) return;
-            if (!(target is BaseMachineTE)) return;
-            machine = (BaseMachineTE) target;
+            if (!(target is MachineTE)) return;
+            machine = (MachineTE) target;
             inputCopy = Lib.cloneItemArray(machine.inputSlots);
             outputCopy = Lib.cloneItemArray(machine.outputSlots);
             machineInterface?.SetState(currentMachineUI);

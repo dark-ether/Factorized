@@ -12,8 +12,8 @@ using Factorized.Net;
 using Terraria.ObjectData;
 using Factorized.UI;
 
-namespace Factorized.TE.MachineTE{
-    public abstract class BaseMachineTE : ModTileEntity
+namespace Factorized.Machines{
+    public abstract class MachineTE : ModTileEntity
     {
         public Item[] inputSlots {get; protected set;}
         public Item[] outputSlots {get; protected set;}
@@ -49,7 +49,7 @@ namespace Factorized.TE.MachineTE{
         public abstract int ValidTile {get;}
         protected abstract void setupProcessIO();
 
-        public BaseMachineTE()
+        public MachineTE()
         {
         }
 
@@ -117,7 +117,7 @@ namespace Factorized.TE.MachineTE{
             Point16 tileOrigin = MouseRelativePlacePosition;
             int placedEntity = Place(i - tileOrigin.X, j - tileOrigin.Y);
 
-            BaseMachineTE placedMachine = (BaseMachineTE)TileEntity.ByID[placedEntity];
+            MachineTE placedMachine = (MachineTE)TileEntity.ByID[placedEntity];
             placedMachine.setup();
 
             return placedEntity;

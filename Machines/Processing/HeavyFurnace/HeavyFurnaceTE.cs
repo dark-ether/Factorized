@@ -5,13 +5,14 @@ using Microsoft.Xna.Framework;
 using Terraria.ModLoader.IO;
 using System.IO;
 using Microsoft.Xna.Framework.Graphics;
-using Factorized.Tiles.Machines;
 using Factorized.Utility;
 using Terraria.ID;
 using System.Collections.Generic;
 
-namespace Factorized.TE.MachineTE{
-    public class HeavyFurnaceTE : BaseMachineTE {
+namespace Factorized.Machines.Processing.HeavyFurnace
+{
+    public class HeavyFurnaceTE : MachineTE
+    {
         public override int ValidTile => ModContent.TileType<HeavyFurnaceTile>();
         protected override void setupProcessIO()
         {

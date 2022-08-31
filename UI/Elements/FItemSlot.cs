@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using System;
 using Factorized;
 
-namespace Factorized.UI
+namespace Factorized.UI.Elements
 {
     public class FItemSlot : UIElement
     {

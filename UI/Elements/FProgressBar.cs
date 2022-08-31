@@ -4,7 +4,7 @@ using ReLogic.Content;
 using System;
 using Microsoft.Xna.Framework;
 
-namespace Factorized.UI {
+namespace Factorized.UI.Elements {
     public class FProgressBar : UIElement
     {
         protected Texture2D fullImage;
@@ -41,7 +41,6 @@ namespace Factorized.UI {
             dimensions.Height =(int) ( percent* (float) dimensions.Height);
             spriteBatch.Draw(fullImage,dimensions,
                 new Rectangle(0,0,ImageWidth,(int) (percent * ((float) ImageHeight))),Color.White);
-            Factorized.mod.Logger.InfoFormat("drew progressBar");
         }
         public override string ToString()
         {

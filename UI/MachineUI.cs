@@ -6,8 +6,9 @@ using Terraria.GameContent.UI.Elements;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Terraria.DataStructures;
-using Factorized.TE.MachineTE;
+using Factorized.Machines;
 using Factorized;
+using Factorized.UI.Elements;
 using Factorized.Utility;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
@@ -38,7 +39,7 @@ namespace Factorized.UI {
             inputItems = new List<FItemSlot>();
             outputItems = new List<FItemSlot>();
             FItemSlot.PIT += UICaller.machineSynchronizer;
-            ref BaseMachineTE machine = ref UICaller.machine;
+            ref MachineTE machine = ref UICaller.machine;
             for (int i = 0; i < machine.inputSlots.Length; i++)
             {
                 FItemSlot itemSlot = new (machine.InputSlotRef(i),3);
@@ -62,7 +63,6 @@ namespace Factorized.UI {
                 FireImage.Width.Set(40,0f);
                 FireImage.HAlign = 0.5f;
                 FireImage.VAlign = 0.5f;
-                Factorized.mod.Logger.InfoFormat("loaded image with:{0}",FireImage);
                 processingPanel.Append(FireImage);
             }
 
@@ -104,8 +104,8 @@ namespace Factorized.UI {
             processingPanel.HAlign = 0.1f;
             processingPanel.VAlign = 0.65f;
 
-            gotFullfire = ModContent.RequestIfExists<Texture2D>("Factorized/UI/full_fire",out fullFire, AssetRequestMode.ImmediateLoad);
-            gotEmptyFire = ModContent.RequestIfExists<Texture2D>("Factorized/UI/empty_fire",out emptyFire,AssetRequestMode.ImmediateLoad);
+            gotFullfire = ModContent.RequestIfExists<Texture2D>("Factorized/Assets/full_fire",out fullFire, AssetRequestMode.ImmediateLoad);
+            gotEmptyFire = ModContent.RequestIfExists<Texture2D>("Factorized/Assets/empty_fire",out emptyFire,AssetRequestMode.ImmediateLoad);
 
 
             Append(processingPanel);

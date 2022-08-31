@@ -8,11 +8,10 @@ using Terraria.Enums;
 using Terraria.Audio;
 using Microsoft.Xna.Framework;
 using Factorized.UI;
-using Factorized.TE.MachineTE;
 using Factorized.Utility;
 using System.Linq;
 
-namespace Factorized.Tiles.Machines{
+namespace Factorized.Machines{
     public abstract class MachineTile : ModTile
     {
         public override void SetStaticDefaults()
@@ -29,7 +28,7 @@ namespace Factorized.Tiles.Machines{
             TileObjectData.newTile.LavaPlacement = LiquidPlacement.Allowed;
             TileObjectData.newTile.Origin = new Point16(0,0);
             modifyObjectData();
-            BaseMachineTE myMachine = getTileEntity();//get tile entity makes the tile call the correct tile entity
+            MachineTE myMachine = getTileEntity();//get tile entity makes the tile call the correct tile entity
             if(myMachine is not null){
                 TileObjectData.newTile.HookPostPlaceMyPlayer = new PlacementHook(myMachine.Hook_AfterPlacement
                 ,-1,0,false);
@@ -43,10 +42,10 @@ namespace Factorized.Tiles.Machines{
                 && !getTileEntityInLocation(i,j).machineState.IsProcessing();
         }
         */
-        public virtual BaseMachineTE getTileEntityInLocation(int i ,int j)
+        public virtual MachineTE getTileEntityInLocation(int i ,int j)
         {
             if(!TileEntity.ByPosition.ContainsKey(TileUtils.GetTileOrigin(i,j))) return null;
-            BaseMachineTE tileEntity = (BaseMachineTE) TileEntity.ByPosition[TileUtils.GetTileOrigin(i,j)];
+            MachineTE tileEntity = (MachineTE) TileEntity.ByPosition[TileUtils.GetTileOrigin(i,j)];
             return tileEntity;
         }
 
@@ -104,7 +103,7 @@ namespace Factorized.Tiles.Machines{
         {
             Point16 tileOrigin = TileUtils.GetTileOrigin(i,j);
             Item.NewItem(new EntitySource_TileBreak(i, j),i * 16 , j * 16,48,32,getItemType());
-            BaseMachineTE dead = getTileEntityInLocation(i,j);
+            MachineTE dead = getTileEntityInLocation(i,j);
             foreach(var item in dead.inputSlots.Concat(dead.outputSlots))
             {
                 if(!item.IsAir)
@@ -114,7 +113,7 @@ namespace Factorized.Tiles.Machines{
             }
 
         }
-        public abstract BaseMachineTE getTileEntity();
+        public abstract MachineTE getTileEntity();
         public abstract int getItemType();
     }
 }
