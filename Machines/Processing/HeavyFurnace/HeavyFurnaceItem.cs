@@ -10,7 +10,7 @@ namespace Factorized.Machines.Processing.HeavyFurnace
 		    public override void SetStaticDefaults()
 		    {
 			      DisplayName.SetDefault("Heavy Furnace"); // By default, capitalization in classnames will add spaces to the display name. You can customize the display name here by uncommenting this line.
-			      Tooltip.SetDefault("A Furnace that consumes Fuel to generate Bars at a more efficient rate,\n can only Smelt Hellstone with Hellstone bars as Fuel");
+			      Tooltip.SetDefault("A Furnace that consumes Fuel to generate Bars at a more efficient rate");
 		    }
 
 		    public override void SetDefaults()
@@ -24,7 +24,6 @@ namespace Factorized.Machines.Processing.HeavyFurnace
                 Item.createTile = ModContent.TileType<Machines.Processing.HeavyFurnace.HeavyFurnaceTile>();
                 Item.useAnimation = 15;
                 Item.useTime = 15;
-                Item.maxStack = 999;
                 Item.consumable = true;
                 Item.useStyle = ItemUseStyleID.Swing;
 		    }
