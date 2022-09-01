@@ -18,7 +18,8 @@ namespace Factorized.Machines
         public int IType {get => SlotItem.type;}
         public int stack {get => SlotItem.stack;}
         public int maxStack {get => SlotItem.maxStack;}
-        public Factorized.ItemReferrer GetItem()
+        public bool IsAir {get=> SlotItem.IsAir;}
+        public Factorized.ItemReferrer GetRef()
         {
             return  () => ref SlotItem;
         }

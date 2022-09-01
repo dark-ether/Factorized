@@ -104,7 +104,7 @@ namespace Factorized.Machines{
             Point16 tileOrigin = TileUtils.GetTileOrigin(i,j);
             Item.NewItem(new EntitySource_TileBreak(i, j),i * 16 , j * 16,48,32,getItemType());
             MachineTE dead = getTileEntityInLocation(i,j);
-            foreach(var item in dead.inputSlots.Concat(dead.outputSlots))
+            foreach(var item in dead.GetItems())
             {
                 if(!item.IsAir)
                 {

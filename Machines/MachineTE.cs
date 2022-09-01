@@ -59,7 +59,6 @@ namespace Factorized.Machines{
         protected virtual void OnProgress(){}
         protected virtual bool CanProgress(){return true;}
         protected virtual void OnFinish(){}
-        protected virtual bool CanFinish(){return true;}
 
         public MachineTE()
         {
@@ -89,7 +88,6 @@ namespace Factorized.Machines{
             }
         }
         
-
         public sealed override int Hook_AfterPlacement(int i, int j, int type, int style, int direction, int alternate){
             
             if(Main.netMode == NetmodeID.MultiplayerClient){
@@ -150,7 +148,7 @@ namespace Factorized.Machines{
             foreach(MachineSlot slot in Slots){
                 writer.Write(slot);
             }
-            write.Write(Process);
+            writer.Write(Process);
         }
         
         public override void OnNetPlace(){
@@ -210,11 +208,32 @@ namespace Factorized.Machines{
                         OnStartEvent(this);
                     }
                     OnStart();
+                    Start(Process);
                     break;
 
                 }
             }
         }
+
+        private void Start(MachineProcess Process)
+        {
+            foreach(var item in Process.Consume)
+            {
+                foreach(var slot in Slots)
+                {
+                    if(slot.IType ==item.type)
+                    {
+                        slot.SlotItem.stack -= item.stack;
+                        if(slot.stack <= 0)
+                        {
+                            slot.SlotItem = new Item();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
         protected void _Progress()
         {
             if(!CanProgress())return;
@@ -231,8 +250,8 @@ namespace Factorized.Machines{
 
         protected void _Finish()
         {
-            if(!CanFinish()) return;
-            //TODO: Add item place routine;
+            if(!CanFinish(Process)) return;
+            Finish(Process);
             if(OnMachineFinish != null)
             {
                 OnMachineFinish(this);
@@ -241,88 +260,107 @@ namespace Factorized.Machines{
             {
                 OnFinishEvent(this);
             }
+            OnFinish();
+        }
+        protected void Finish(MachineProcess Process)
+        {
+            List<Item> noCopies = new ();
+            foreach(var item in Process.Produce)
+            {
+            Predicate<MachineSlot> func = (slot) =>{ return slot.IType == item.type;};
+                if(Slots.Exists(func))
+                {
+                    MachineSlot slot = Slots.Find(func);
+                    if(slot.stack + item.stack <= slot.maxStack)
+                    {
+                        slot.SlotItem.stack += item.stack;
+                    }
+                    else
+                    {
+                        slot.SlotItem.stack = slot.maxStack;
+                        item.stack += slot.stack - slot.maxStack;
+                        noCopies.Add(item);
+                    }
+                }else 
+                {
+                    noCopies.Add(item);
+                }
+            }
+            foreach (var item in noCopies)
+            {
+                for(int i = 0; i< Slots.Count();i++)
+                {
+                    if(Slots[i].IsAir)
+                    {
+                        Slots[i].SlotItem = item;
+                        break;
+                    }
+                }
+            }
+        }
+        protected virtual bool CanFinish(MachineProcess Process){
+            int freeSlots = 0;
+            foreach(var slot in Slots)
+            {
+                if(Process.Produce.Exists(
+                    item => item.type == slot.IType && slot.stack + item.stack <= slot.maxStack)
+                    || slot.IsAir){
+                    freeSlots++;
+                }
+            }
+            return freeSlots >= Process.Produce.Count();
         }
 
         protected virtual bool ValidateProcess(MachineProcess process)
         {
             return hasItems(process);
         }
-        protected virtual bool canGenerateOutput(MachineOutput currentProcess){
-            int freeSlots =  0;
-            for(int i = 0; i < outputSlots.Length; i++)
-            {
-                foreach(var outputItem in currentProcess.itemsToAdd)
-                {
-                    if(outputSlots[i].type == outputItem.Item1 && outputSlots[i].stack +outputItem.Item2 <= outputSlots[i].maxStack)
-                    {
-                        freeSlots += 1;
-                    }
-                }
-                if(outputSlots[i].IsAir)
-                {
-                    freeSlots += 1;
-                }
-            }
-            return freeSlots >= currentProcess.itemsToAdd.Count();
-        }
-
-        public virtual bool hasItems()
+        protected bool hasItems(MachineProcess Process)
         {
-            bool foundItem = false;
-            foreach(var item in outputSlots)
+            bool hasItems = true;
+            foreach (var item in Process.Consume)
             {
-                if (!item.IsAir)
-                {
-                    foundItem = true;
-                }
-            }            
-            foreach(var item in inputSlots)
-            {
-                if (!item.IsAir)
-                {
-                    foundItem = true;
-                }
+                hasItems = hasItems && Slots.Exists(slot => slot.IType == item.type && slot.stack >= item.stack);
             }
-            return foundItem;
+            return hasItems;
+        }
+        
+        public List<MachineSlot> GetSlots(MachineSlotType type)
+        {
+            List<MachineSlot> r = new ();
+            foreach (var entry in Slots)
+            {
+                if(entry.Type == type) r.Add(entry);
+            }
+            return r;
         }
 
         public bool TryAddItemToSlot(MachineSlotType slotType, int slotNumber,Item myItem)
         {
-            switch (slotType) {
-                case MachineSlotType.Input: 
-                    if (inputSlots[slotNumber].IsAir){
-                        inputSlots[slotNumber] = myItem;
-                        return true;
-                    }
-                    else if (inputSlots[slotNumber].type == myItem.type || myItem.IsAir){
-                        inputSlots[slotNumber] = myItem;
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                case MachineSlotType.Output:
-                    if (outputSlots[slotNumber].IsAir){
-                        outputSlots[slotNumber] = myItem;
-                        return true;
-                    }
-                    else if (outputSlots[slotNumber].type == myItem.type || myItem.IsAir){
-                        outputSlots[slotNumber] = myItem;
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                default: return false;
+            List<MachineSlot> slots = GetSlots(slotType);
+            if(slotNumber >= 0 && slotNumber< slots.Count())
+            {
+                if(slots[slotNumber].IsAir)
+                {
+                    slots[slotNumber].SlotItem = myItem;
+                    return true;
+                }
             }
+            return false;
         }
         public Factorized.ItemReferrer InputSlotRef(int i) 
         {
-            return () => {return ref inputSlots[i];};
+            return GetSlots(MachineSlotType.Input)[i].GetRef();
         }
         public Factorized.ItemReferrer OutputSlotRef(int i)
         {
-            return () => {return ref outputSlots[i];};
+            return GetSlots(MachineSlotType.Output)[i].GetRef();
+        }
+        public List<Item> GetItems()
+        {
+            IEnumerable<Item> list = from s in Slots
+                                select s.SlotItem;
+            return list.ToList();
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using Factorized.Utility;
-
+using Factorized.Machines;
 namespace Factorized.Net {
     public static class Net
     {
@@ -39,34 +39,7 @@ namespace Factorized.Net {
             }
         }
 
-        public static void Write(this BinaryWriter writer, MachineState machineState)
-        {
-            writer.Write(machineState.counters);
-            writer.Write(machineState.values);
-            writer.Write(machineState.properties);
-            writer.Write(machineState.countersData);
-            writer.Write(machineState.valuesData);
-            writer.Write(machineState.propertiesData);
-            if(machineState.currentProcess != null){
-              writer.Write(true);
-              writer.Write(machineState.currentProcess);
-            } else {
-              writer.Write(false);
-            }
-            writer.Write(machineState.inputSlotsMetadata);
-            writer.Write(machineState.outputSlotsMetadata);
-        }
 
-        public static void Write(this BinaryWriter writer, MachineOutput output)
-        {
-            writer.Write(output.itemsToAdd);
-            writer.Write(output.itemsToRemove);
-            writer.Write(output.changeCounters);
-            writer.Write(output.changeValues);
-            writer.Write(output.propertiesToSet);
-            writer.Write(output.processingTime);
-        }
-        
         public static void Write(this BinaryWriter writer, List<(int,int)> listoftuples)
         {
             writer.Write(listoftuples.Count);
@@ -124,38 +97,6 @@ namespace Factorized.Net {
             return counters;
         }
 
-        public static MachineState ReadMachineState(this BinaryReader reader)
-        {
-            MachineState machine = new MachineState();
-
-            machine.counters = reader.ReadStringIntDictionary();
-            machine.values = reader.ReadStringDoubleDictionary();
-            machine.properties = reader.ReadStringStringDictionary();
-            machine.countersData = reader.ReadStringIntDictionary();
-            machine.valuesData = reader.ReadStringDoubleDictionary();
-            machine.propertiesData = reader.ReadStringStringDictionary();
-            if (reader.ReadBoolean()){
-              machine.currentProcess = reader.ReadMachineOutput();
-            } else {
-              machine.currentProcess = null;
-            }
-            machine.inputSlotsMetadata = reader.ReadListOfString();
-            machine.outputSlotsMetadata = reader.ReadListOfString();
-            return machine;
-        }
-
-        public static MachineOutput ReadMachineOutput(this BinaryReader reader)
-        {
-            MachineOutput machine = new ();
-
-            machine.itemsToAdd = reader.ReadListOfTupleOfInts();
-            machine.itemsToRemove = reader.ReadListOfTupleOfInts();
-            machine.changeCounters = reader.ReadStringIntDictionary();
-            machine.changeValues = reader.ReadStringDoubleDictionary();
-            machine.propertiesToSet = reader.ReadStringStringDictionary();
-            machine.processingTime = reader.ReadInt32();
-            return machine;
-        }
 
         public static List<(int,int)> ReadListOfTupleOfInts(this BinaryReader reader)
         {
@@ -178,6 +119,51 @@ namespace Factorized.Net {
                 list.Add(reader.ReadString());
             }
             return list;
+        }
+        public static MachineSlot ReadMachineSlot(this BinaryReader reader)
+        {
+            MachineSlot r = new ((MachineSlotType)reader.ReadInt32());
+            r.SlotItem = ItemIO.Receive(reader,true);
+            return r;
+        }
+        public static void Write(this BinaryWriter writer,MachineSlot inp)
+        {
+            writer.Write((int)inp.Type);
+            ItemIO.Send(inp.SlotItem,writer,true);
+        }
+        public static void Write(this BinaryWriter writer,MachineProcess process)
+        {
+            writer.Write(process.ProcessingTime);
+            writer.Write(process.Consume);
+            writer.Write(process.Produce);
+            TagIO.Write(process.Properties,writer);
+        }
+        public static MachineProcess ReadMachineProcess(this BinaryReader reader)
+        {
+            MachineProcess r = new ();
+            r.ProcessingTime = reader.ReadInt32();
+            r.Consume = reader.ReadListOfItems();
+            r.Produce = reader.ReadListOfItems();
+            r.Properties = TagIO.Read(reader);
+            return r;
+        }
+        public static void Write(this BinaryWriter writer, List<Item> inp)
+        {
+            writer.Write(inp.Count());
+            foreach(var item in inp)
+            {
+                ItemIO.Send(item, writer, true);
+            }
+        }
+        public static List<Item> ReadListOfItems(this BinaryReader reader)
+        {
+            List<Item> r= new ();
+            int c = reader.ReadInt32();
+            for(int i =0; i < c;i++)
+            {
+                r.Add(ItemIO.Receive(reader,true));
+            }
+            return r;
         }
     }
 }
