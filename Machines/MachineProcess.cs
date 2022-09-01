@@ -6,5 +6,6 @@ namespace Factorized.Machines
 {
     public class MachineProcess
     {
+        public int ProcessingTime { get; set;}
     }
 }

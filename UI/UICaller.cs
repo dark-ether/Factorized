@@ -119,7 +119,7 @@ namespace Factorized.UI{
                     || inputCopy[i].type != machine.inputSlots[i].type)
                 {
                     index = i;
-                    slotType = MachineSlotType.InputSlot;
+                    slotType = MachineSlotType.Input;
                     break;
                 }
             }
@@ -130,7 +130,7 @@ namespace Factorized.UI{
                         ||outputCopy[i].type != machine.outputSlots[i].type)
                     {
                         index = i;
-                        slotType = MachineSlotType.OutputSlot;
+                        slotType = MachineSlotType.Output;
                         break;
                     }
 
@@ -138,14 +138,14 @@ namespace Factorized.UI{
             }
             if(index != null ) {
                 switch ((MachineSlotType)slotType) {
-                    case MachineSlotType.InputSlot:
+                    case MachineSlotType.Input:
                         MessageHandler.ClientModifyTESlotSend(machine.ID,
-                            (int)MachineSlotType.InputSlot,
+                            (int)MachineSlotType.Input,
                             (int)index,machine.inputSlots[(int)index]);
                         break;
-                    case MachineSlotType.OutputSlot:
+                    case MachineSlotType.Output:
                         MessageHandler.ClientModifyTESlotSend(machine.ID,
-                            (int)MachineSlotType.OutputSlot,
+                            (int)MachineSlotType.Output,
                             (int)index,machine.outputSlots[(int)index]);
                         break;
                 }
