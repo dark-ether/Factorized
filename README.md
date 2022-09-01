@@ -5,6 +5,8 @@ factorized is a terraria mod that aims to make automation possible and necessary
 
 ## Plans
 
-1. make the example machine work in multiplayer
-2. add new pylons
-3. add bags
+- make tech tree
+- remove crates so we can add a new mechanic to replace it
+- rebalance the game so that we can add more powerful things
+- new pylons
+- bags

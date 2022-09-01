@@ -1,2 +1,1 @@
-Factorized is a mod that aims to bring automation and reasons to use it.
-TODO: when used on a server it eats the sand and gives an error need to fix that
+Factorized is a mod which allows automation of farms.

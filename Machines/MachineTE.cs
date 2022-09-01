@@ -240,7 +240,7 @@ namespace Factorized.Machines{
             {
                 foreach(var outputItem in currentProcess.itemsToAdd)
                 {
-                    if(outputSlots[i].type == outputItem.Item1)
+                    if(outputSlots[i].type == outputItem.Item1 && outputSlots[i].stack +outputItem.Item2 <= outputSlots[i].maxStack)
                     {
                         freeSlots += 1;
                     }

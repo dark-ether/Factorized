@@ -16,12 +16,12 @@ namespace Factorized.Content.EngineeringTable
             Item.useTime = 15;
             Item.consumable = true;
             Item.useStyle = ItemUseStyleID.Swing;
-            Item.rare = 6;
+            Item.rare = 0;
             Item.autoReuse = true;
         }
         public override void SetStaticDefaults()
         {
-            DisplayName.SetDefault("EngineeringTable"); 
+            DisplayName.SetDefault("Engineering Table"); 
         }
         public override void AddRecipes()
         {
