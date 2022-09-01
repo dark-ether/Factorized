@@ -22,6 +22,7 @@ namespace Factorized.Machines{
     {
         protected List<MachineSlot> Slots {get; set;}
         protected MachineProcess Process {get; set;}
+
         public int timer{
             get;
             protected set;
@@ -38,11 +39,13 @@ namespace Factorized.Machines{
 
         public static event MachineOperation OnMachinePlace;
         public static event MachineOperation OnMachineStart;
+        public static event MachineOperation OnMachineUpdate;
         public static event MachineOperation OnMachineProgress;
         public static event MachineOperation OnMachineFinish;
 
         public event MachineOperation OnPlaceEvent;
         public event MachineOperation OnStartEvent;
+        public event MachineOperation OnUpdateEvent;
         public event MachineOperation OnProgressEvent;
         public event MachineOperation OnFinishEvent;
 
@@ -52,6 +55,7 @@ namespace Factorized.Machines{
 
         protected virtual void OnPlace(){}
         protected virtual void OnStart(){}
+        protected virtual void OnUpdate(){}
         protected virtual void OnProgress(){}
         protected virtual bool CanProgress(){return true;}
         protected virtual void OnFinish(){}
@@ -179,9 +183,70 @@ namespace Factorized.Machines{
                     _Progress();
                 }
             }
+            if(OnMachineUpdate != null)
+            {
+                OnMachineUpdate(this);
+            }
+            if(OnUpdateEvent != null)
+            {
+                OnUpdateEvent(this);
+            }
+            OnUpdate();
             NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
         }
+        protected void _Start()
+        {
+            foreach(var p in allProcesses)
+            {
+                if(ValidateProcess(p))
+                {
+                    Process = p;
+                    if(OnMachineStart!= null)
+                    {
+                        OnMachineStart(this);
+                    }
+                    if(OnStartEvent!= null )
+                    {
+                        OnStartEvent(this);
+                    }
+                    OnStart();
+                    break;
 
+                }
+            }
+        }
+        protected void _Progress()
+        {
+            if(!CanProgress())return;
+            timer++;
+            if(OnMachineProgress!= null){
+                OnMachineProgress(this);
+            }
+            if(OnProgressEvent != null)
+            {
+                OnProgressEvent(this);
+            }
+            OnProgress();
+        }
+
+        protected void _Finish()
+        {
+            if(!CanFinish()) return;
+            //TODO: Add item place routine;
+            if(OnMachineFinish != null)
+            {
+                OnMachineFinish(this);
+            }
+            if(OnFinishEvent != null)
+            {
+                OnFinishEvent(this);
+            }
+        }
+
+        protected virtual bool ValidateProcess(MachineProcess process)
+        {
+            return hasItems(process);
+        }
         protected virtual bool canGenerateOutput(MachineOutput currentProcess){
             int freeSlots =  0;
             for(int i = 0; i < outputSlots.Length; i++)
