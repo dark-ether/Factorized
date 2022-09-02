@@ -4,7 +4,6 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Terraria.DataStructures;
 using Terraria.ID;
-using Factorized;
 using Factorized.Machines;
 using Factorized.Utility;
 
@@ -29,17 +28,13 @@ namespace Factorized.Net
                 return;
             }
             MachineTE interacted = (MachineTE)target;
-            MachineSlotType slotType = (MachineSlotType)reader.ReadInt32();
             int slotNumber = reader.ReadInt32();
             Item myItem = ItemIO.Receive(reader, true);
-            if (!interacted.TryAddItemToSlot(slotType, slotNumber, myItem))
-            {
-                NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null,
-                        interacted.ID, interacted.Position.X, interacted.Position.Y);
-                //TODO: fix edge case where players remove/add items at the same time
-            }
+            interacted.TryAddItemToSlot(slotNumber, myItem);
+            NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null,
+                interacted.ID, interacted.Position.X, interacted.Position.Y);
         }
-        public static void ClientModifyTESlotSend(int TEID,int slotType ,int slotNumber,Item myItem)
+        public static void ClientModifyTESlotSend(int TEID,int slotNumber,Item myItem)
         {
             if (Main.netMode != NetmodeID.MultiplayerClient)
             {
@@ -48,7 +43,6 @@ namespace Factorized.Net
             ModPacket packet = Factorized.mod.GetPacket();
             packet.Write((int)MessageType.ClientModifyTESlot);
             packet.Write(TEID);
-            packet.Write(slotType);
             packet.Write(slotNumber);
             ItemIO.Send(myItem,packet,true);
             packet.Send();

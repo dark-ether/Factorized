@@ -14,16 +14,15 @@ using Terraria.ModLoader.IO;
 using Factorized.UI.Elements;
 
 namespace Factorized.UI{
-    public class UICaller : ModSystem
+    public class UIManager : ModSystem
     {
         internal static UserInterface machineInterface; //user interface
         internal static MachineUI currentMachineUI; // machine ui in this case a melter
         private static GameTime _lastUpdateUiGameTime;
         public static MachineTE machine;
-        public static Item [] inputCopy;
+        public static List<MachineSlot>Copy;
         public static Item [] outputCopy;
         private static string visibleUI = "";
-        public override string Name => base.Name;
 
         public override void Load()
         {
@@ -55,8 +54,8 @@ namespace Factorized.UI{
                         hideMachineUI();
                         return;
                     }
-                    Vector2 melterPosition = new Vector2(UICaller.machine.Position.X*16,
-                        UICaller.machine.Position.Y*16);//changing to world coordinates
+                    Vector2 melterPosition = new Vector2(UIManager.machine.Position.X*16,
+                        UIManager.machine.Position.Y*16);//changing to world coordinates
                     float distance = Vector2.Distance(melterPosition,Main.LocalPlayer.Center);
                     if(distance > 5*16){//5 tiles
                         hideMachineUI();
@@ -93,8 +92,7 @@ namespace Factorized.UI{
             if (!TileEntity.ByPosition.TryGetValue(new Point16(machineX,machineY),out target)) return;
             if (!(target is MachineTE)) return;
             machine = (MachineTE) target;
-            inputCopy = Lib.cloneItemArray(machine.inputSlots);
-            outputCopy = Lib.cloneItemArray(machine.outputSlots);
+            Copy = new (machine.GetSlots());
             machineInterface?.SetState(currentMachineUI);
         }
 
@@ -112,46 +110,20 @@ namespace Factorized.UI{
         public static void machineSynchronizer(FItemSlot target)
         {
             int? index = null;
-            MachineSlotType? slotType = null;
-            for (int i=0;i< machine.inputSlots.Length;i++)
+            for (int i=0;i< machine.GetSlots().Count;i++)
             {
-                if(inputCopy[i].stack != machine.inputSlots[i].stack
-                    || inputCopy[i].type != machine.inputSlots[i].type)
+                if(Copy[i].stack != machine.GetSlots()[i].stack
+                    || Copy[i].IType != machine.GetSlots()[i].IType)
                 {
                     index = i;
-                    slotType = MachineSlotType.Input;
                     break;
                 }
             }
-            if(index== null) {
-                for(int i=0; i< machine.outputSlots.Length;i++)
-                {
-                    if(outputCopy[i].stack != machine.outputSlots[i].stack
-                        ||outputCopy[i].type != machine.outputSlots[i].type)
-                    {
-                        index = i;
-                        slotType = MachineSlotType.Output;
-                        break;
-                    }
-
-                }
-            }
             if(index != null ) {
-                switch ((MachineSlotType)slotType) {
-                    case MachineSlotType.Input:
-                        MessageHandler.ClientModifyTESlotSend(machine.ID,
-                            (int)MachineSlotType.Input,
-                            (int)index,machine.inputSlots[(int)index]);
-                        break;
-                    case MachineSlotType.Output:
-                        MessageHandler.ClientModifyTESlotSend(machine.ID,
-                            (int)MachineSlotType.Output,
-                            (int)index,machine.outputSlots[(int)index]);
-                        break;
-                }
+                MessageHandler.ClientModifyTESlotSend(machine.ID,
+                    (int)index,machine.GetItems()[(int)index]);
             }
-            UICaller.inputCopy = Lib.cloneItemArray(UICaller.machine.inputSlots);
-            UICaller.outputCopy = Lib.cloneItemArray(UICaller.machine.outputSlots);
+            UIManager.Copy = new (machine.GetSlots());
         }
     }
 }

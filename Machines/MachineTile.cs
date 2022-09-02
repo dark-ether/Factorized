@@ -93,7 +93,7 @@ namespace Factorized.Machines{
             }
             
             if(Vector2.Distance(playerPosition,tilePosition)< 5 *16){
-                UICaller.showMachineUI(x,y);
+                UIManager.showMachineUI(x,y);
                 return true;
             }
             return false;

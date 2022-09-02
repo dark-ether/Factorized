@@ -4,19 +4,29 @@ using Terraria.UI;
 using Microsoft.Xna.Framework;
 using System;
 using Factorized;
+using Factorized.Machines;
 
 namespace Factorized.UI.Elements
 {
     public class FItemSlot : UIElement
     {
-        public Factorized.ItemReferrer getItem;
+        public Func<MachineSlot> getItem;
         public int itemContext;
         public delegate void ITEvent(FItemSlot target);
+        public static event ITEvent BIT;
         public static event ITEvent PIT;
         public bool pressedRightClick = false;
         public int rightClickHoldTicks = 0;
         public int timer = 0;
-        public FItemSlot (Factorized.ItemReferrer input,int context)
+        protected static Item[] dummy = new Item[11];
+        static FItemSlot()
+        {
+            for(int i = 0;i<11;i++)
+            {
+                dummy[i] = new Item();
+            }
+        }
+        public FItemSlot (Func<MachineSlot> input,int context)
         {
             getItem = input;
             itemContext = context;
@@ -30,20 +40,30 @@ namespace Factorized.UI.Elements
             }
             Recalculate();
         }
+        //BIT stands for Before Item Trasnfer
+        public void RaiseBITEvent()
+        {
+            if(BIT != null)
+            {
+                BIT(this);
+            }
+            Recalculate();
+        }
 
         protected override void DrawSelf(SpriteBatch spriteBatch)
         {
             Vector2 position = GetDimensions().Center()
                 + new Vector2(52f, 52f) * -0.5f * Main.inventoryScale;
 
-            ItemSlot.Draw(spriteBatch,ref getItem(), itemContext, position);
+            ItemSlot.Draw(spriteBatch,ref getItem().SlotItem, itemContext, position);
         }
 
         //the cursor item isn't only Main.mouseItem but also player.inventory[58]
         public override void Click(UIMouseEvent evt)
         {
             if(evt.Target != this) return;
-            ref Item remove = ref getItem();
+            RaiseBITEvent();
+            ref Item remove = ref getItem().SlotItem;
             if (Main.mouseItem.IsAir)
             {
                 if(!remove.IsAir)
@@ -100,7 +120,8 @@ namespace Factorized.UI.Elements
         public override void RightClick(UIMouseEvent evt)
         {
             if(evt.Target != this) return;
-            ref Item remove = ref getItem();
+            RaiseBITEvent();
+            ref Item remove = ref getItem().SlotItem;
             if(Main.mouseItem.IsAir)
             {
                 if(remove.IsAir) return;
@@ -124,12 +145,14 @@ namespace Factorized.UI.Elements
         
         public override void RightMouseDown(UIMouseEvent evt)
         {
+            base.RightMouseDown(evt);
             if(evt.Target != this) return;
             pressedRightClick = true;
             rightClickHoldTicks = 30;
         }
         public override void RightMouseUp(UIMouseEvent evt)
         {
+            base.RightMouseUp(evt);
             if(evt.Target != this) return;
             pressedRightClick = false;
         }

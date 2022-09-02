@@ -8,27 +8,30 @@ using Microsoft.Xna.Framework.Graphics;
 using Factorized.Utility;
 using Terraria.ID;
 using System.Collections.Generic;
+using Factorized.Machines;
 
 namespace Factorized.Machines.Processing.HeavyFurnace
 {
     public class HeavyFurnaceTE : MachineTE
     {
         public override int ValidTile => ModContent.TileType<HeavyFurnaceTile>();
-        protected override void setupProcessIO()
+
+        public override List<MachineProcess> allProcesses => Recipes;
+
+        public override Dictionary<MachineSlotType, int> SlotsComposition { 
+            get =>  new (){[MachineSlotType.Input] = 3 , [MachineSlotType.Output] = 2};
+        }
+
+        public static List<MachineProcess> Recipes = new ();
+        static HeavyFurnaceTE()
         {
-            MachineInput input = new ();
-            MachineOutput output = new ();
-            List<(int,int)> category1 = new ();
-            (int,int) item; 
-            item = (ItemID.SandBlock,1);
-            category1.Add(item);
-            input.inputItems["input"] = category1;
-            output.itemsToRemove.Add(item);
-            item = (ItemID.Glass,2);
-            output.itemsToAdd.Add(item);
-            output.processingTime = 60*5;
-            ProcessIO = new ();
-            ProcessIO[input] = output;
+            MachineProcess process = new();
+            Item item = new (ItemID.SandBlock,1);
+            process.Consume.Add(item);
+            item = new (ItemID.Glass,2);
+            process.Produce.Add(item);
+            process.ProcessingTime = 5*60;
+            Recipes.Add(process);
         }
     }
 }

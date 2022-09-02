@@ -11,6 +11,9 @@ using Factorized.Utility;
 using Factorized.Net;
 using Terraria.ObjectData;
 using Factorized.UI;
+using Factorized.UI.Elements;
+using Terraria.UI;
+using Terraria.GameContent.UI.Elements;
 
 namespace Factorized.Machines{
     public delegate void MachineOperation(MachineTE target);
@@ -51,7 +54,7 @@ namespace Factorized.Machines{
 
         public abstract int ValidTile {get;}
         public abstract List<MachineProcess> allProcesses{get;}
-        public abstract Dictionary<MachineSlotType,int> SlotsComposition{get; protected set;}
+        public abstract Dictionary<MachineSlotType,int> SlotsComposition{get;}
 
         protected virtual void OnPlace(){}
         protected virtual void OnStart(){}
@@ -79,9 +82,10 @@ namespace Factorized.Machines{
         }
         protected virtual void _Setup()
         {
+            Slots = new ();
             foreach(var kvp in SlotsComposition)
             {
-                for(int i=0;i<=kvp.Value;i++)
+                for(int i=0;i<kvp.Value;i++)
                 {
                     Slots.Add(new MachineSlot(kvp.Key));
                 }
@@ -140,9 +144,8 @@ namespace Factorized.Machines{
             }
             reader.ReadMachineProcess();
             // add things to update the ui machine again
-            if(UICaller.machine == null) return;
+           //TODO: Test if storing position and getting machine every second is more ergonomic; 
         }
-        //TODO: change net send and net receive
         public override void NetSend(BinaryWriter writer){
             writer.Write(Slots.Count());
             foreach(MachineSlot slot in Slots){
@@ -161,6 +164,7 @@ namespace Factorized.Machines{
         
         public override void SaveData(TagCompound tag){
             tag[nameof(Slots)] = Slots;
+            tag[nameof(Process)] = Process;
         }
 
         public override sealed void Update(){
@@ -251,6 +255,7 @@ namespace Factorized.Machines{
         protected void _Finish()
         {
             if(!CanFinish(Process)) return;
+            timer = 0;
             Finish(Process);
             if(OnMachineFinish != null)
             {
@@ -261,38 +266,41 @@ namespace Factorized.Machines{
                 OnFinishEvent(this);
             }
             OnFinish();
+            Process = null;
         }
         protected void Finish(MachineProcess Process)
         {
             List<Item> noCopies = new ();
             foreach(var item in Process.Produce)
             {
-            Predicate<MachineSlot> func = (slot) =>{ return slot.IType == item.type;};
-                if(Slots.Exists(func))
-                {
-                    MachineSlot slot = Slots.Find(func);
-                    if(slot.stack + item.stack <= slot.maxStack)
-                    {
-                        slot.SlotItem.stack += item.stack;
+                Item p = item.Clone();
+                for(int i =0; i< GetSlots(MachineSlotType.Output).Count; i++){
+                    MachineSlot slot =GetSlots(MachineSlotType.Output)[i];
+                    if(slot.IType == p.type){
+                        if(slot.stack + p.stack <= slot.maxStack )
+                        {
+                            slot.SlotItem.stack += p.stack;
+                            p.stack = 0;
+                        }
+                        else
+                        {
+                            slot.SlotItem.stack = slot.maxStack;
+                            p.stack += slot.stack - slot.maxStack;
+                        }
+                        if(p.stack > 0)
+                        {
+                            noCopies.Add(p);
+                        }
                     }
-                    else
-                    {
-                        slot.SlotItem.stack = slot.maxStack;
-                        item.stack += slot.stack - slot.maxStack;
-                        noCopies.Add(item);
-                    }
-                }else 
-                {
-                    noCopies.Add(item);
                 }
             }
             foreach (var item in noCopies)
             {
-                for(int i = 0; i< Slots.Count();i++)
+                for(int i = 0; i< GetSlots(MachineSlotType.Output).Count();i++)
                 {
-                    if(Slots[i].IsAir)
+                    if(GetSlots(MachineSlotType.Output)[i].IsAir)
                     {
-                        Slots[i].SlotItem = item;
+                        GetSlots(MachineSlotType.Output)[i].SlotItem = item;
                         break;
                     }
                 }
@@ -300,7 +308,7 @@ namespace Factorized.Machines{
         }
         protected virtual bool CanFinish(MachineProcess Process){
             int freeSlots = 0;
-            foreach(var slot in Slots)
+            foreach(var slot in GetSlots(MachineSlotType.Output))
             {
                 if(Process.Produce.Exists(
                     item => item.type == slot.IType && slot.stack + item.stack <= slot.maxStack)
@@ -334,6 +342,10 @@ namespace Factorized.Machines{
             }
             return r;
         }
+        public List<MachineSlot> GetSlots()
+        {
+            return Slots;
+        }
 
         public bool TryAddItemToSlot(MachineSlotType slotType, int slotNumber,Item myItem)
         {
@@ -361,6 +373,96 @@ namespace Factorized.Machines{
             IEnumerable<Item> list = from s in Slots
                                 select s.SlotItem;
             return list.ToList();
+        }
+        public List<Item>GetItems(MachineSlotType type)
+        {
+            List<Item> list = (List<Item>)from s in GetSlots(type)
+                              select s.SlotItem;
+            return list;
+        }
+
+        public void TryAddItemToSlot(int slotNumber, Item myItem)
+        {
+            MachineSlot slot = Slots[slotNumber];
+            if(slot.IType == myItem.type|| myItem.IsAir || slot.IsAir)
+            {
+                slot.SlotItem = myItem;
+            }
+        }
+        public void GenerateUI(MachineUI UI)
+        {
+            UIPanel inputPanel = new ();
+            inputPanel.Width.Set(300,0f);
+            inputPanel.Height.Set(150,0f);
+            inputPanel.VAlign = 0.39f;
+            inputPanel.HAlign = 0.1f;
+
+            GenerateSlotGroup(inputPanel,MachineSlotType.Input,ItemSlot.Context.InventoryItem);
+            UI.Append(inputPanel);
+
+            UIPanel outputPanel = new ();
+            outputPanel = new UIPanel();
+            outputPanel.Width.Set(300,0);
+            outputPanel.Height.Set(150,0);
+            outputPanel.HAlign = 0.1f;
+            outputPanel.VAlign = 0.88f;
+            GenerateSlotGroup(outputPanel,MachineSlotType.Output,ItemSlot.Context.ChestItem);
+            UI.Append(outputPanel);
+
+            UIPanel processingPanel = new ();
+            processingPanel = new UIPanel();
+            processingPanel.Width.Set(150,0f);
+            processingPanel.Height.Set(200,0f);
+            processingPanel.HAlign = 0.2f;
+            processingPanel.VAlign = 0.65f;
+
+            FProgressBar progress = new (UI.fullFire,UI.emptyFire,
+                    () =>{if(Process != null) return timer ; else return 0;},
+                    () =>{ if(Process != null) return Process.ProcessingTime; else return 1;});
+            processingPanel.Append(progress);
+            UI.Append(processingPanel);
+        }
+
+        public void GenerateSlotGroup(UIPanel inputPanel, MachineSlotType type, int context)
+        {
+            List<MachineSlot> machineSlots = GetSlots(type);
+            for(int i = 0; i < machineSlots.Count; i++)
+            {
+                float padding = 10f;
+                float sizeWithPadding = 50f;
+                int rowFit = (int)(inputPanel.Width.Pixels / sizeWithPadding);
+                int colunmFit = (int)(inputPanel.Height.Pixels/ sizeWithPadding);
+                if(rowFit * colunmFit < machineSlots.Count)
+                {
+                    Factorized.mod.Logger.Warn("Created Machine UI with missing elements as they couldn't fit");
+                }
+                float hStart = padding/inputPanel.Width.Pixels;
+                float vStart = padding/inputPanel.Height.Pixels;
+                float hStep = sizeWithPadding/inputPanel.Width.Pixels;
+                float vStep = sizeWithPadding/inputPanel.Height.Pixels;
+                int colunm = i / rowFit;
+                int row = i % rowFit;
+                FItemSlot slot = new ( GetSlotUpdated(i,type),context);
+                slot.Height.Set(sizeWithPadding - 2*padding,0f);
+                slot.Width.Set(sizeWithPadding - 2*padding,0f);
+                slot.HAlign = hStart + row * hStep;
+                slot.VAlign = vStart + colunm * vStep;
+                inputPanel.Append(slot);
+            }
+        }
+        public Func<MachineSlot> GetSlotUpdated(int i, MachineSlotType type)
+        {
+            return () => {
+                TileEntity test = TileEntity.ByPosition[Position];
+                if(test is MachineTE)
+                {
+                    MachineTE newTE = (MachineTE)test;
+                    return newTE.GetSlots(type)[i];
+                }else
+                {
+                    return GetSlots(type)[i];
+                }
+            };
         }
     }
 }
