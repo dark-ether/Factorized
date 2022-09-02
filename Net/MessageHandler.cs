@@ -12,6 +12,7 @@ namespace Factorized.Net
 { 
     public static class MessageHandler 
     {
+        public static bool a{get; private set;}
         public static void ClientModifyTESlotHandler(BinaryReader reader,int whoami)
         {
             if (Main.netMode != NetmodeID.Server)

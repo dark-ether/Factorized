@@ -286,8 +286,8 @@ namespace Factorized.Machines{
                         }
                         else
                         {
+                            p.stack = p.stack + slot.stack - slot.maxStack;
                             slot.SlotItem.stack = slot.maxStack;
-                            p.stack += slot.stack - slot.maxStack;
                         }
                     }
                 }
@@ -309,16 +309,37 @@ namespace Factorized.Machines{
             }
         }
         protected virtual bool CanFinish(MachineProcess Process){
-            int freeSlots = 0;
-            foreach(var slot in GetSlots(MachineSlotType.Output))
+            List<Item> toFit = Process.Produce;
+            List<MachineSlot> Fitted;
+            List<MachineSlot> copy = GetSlots(MachineSlotType.Output);
+            foreach(var i in toFit)
             {
-                if(Process.Produce.Exists(
-                    item => item.type == slot.IType && slot.stack + item.stack <= slot.maxStack)
-                    || slot.IsAir){
-                    freeSlots++;
+                Fitted = copy;
+                Item tf = i.Clone();
+                foreach(var slot in Fitted)
+                {
+                    if(slot.IType == tf.type)
+                    {
+                        if(slot.stack + tf.stack <= slot.maxStack)
+                        {
+                            tf.stack = 0;
+                            break;
+                        }
+                        else
+                        {
+                            tf.stack += slot.stack - slot.maxStack;
+                            continue;
+                        }
+                    }
+                    if(slot.IsAir){ 
+                        tf.stack = 0;
+                        break;
+                    }
+                    copy.Add(slot);
                 }
+                if(tf.stack > 0)return false;
             }
-            return freeSlots >= Process.Produce.Count();
+            return true;
         }
 
         protected virtual bool ValidateProcess(MachineProcess process)
@@ -451,7 +472,7 @@ namespace Factorized.Machines{
                 slot.Width.Set(sizeWithPadding - 2*padding,0f);
                 slot.HAlign = hStart + row * hStep;
                 slot.VAlign = vStart + colunm * vStep;
-                FItemSlot.BIT += (slot) => MessageHandler.ClientRequestUpdateSend(Position);
+                FItemSlot.BIT += (slot) => MessageHandler.ClientRequestUpdateSend(Position,ID);
                 inputPanel.Append(slot);
             }
         }
