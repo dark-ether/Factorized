@@ -6,6 +6,7 @@ using Terraria.DataStructures;
 using Terraria.ID;
 using Factorized.Machines;
 using Factorized.Utility;
+using System;
 
 namespace Factorized.Net 
 { 
@@ -46,6 +47,24 @@ namespace Factorized.Net
             packet.Write(slotNumber);
             ItemIO.Send(myItem,packet,true);
             packet.Send();
+        }
+
+        public static void ClientRequestUpdateSend(Point16 position,int id)
+        {
+            if(Main.netMode != NetmodeID.MultiplayerClient) return;
+            ModPacket packet = Factorized.mod.GetPacket();
+            packet.Write((int)MessageType.ClientRequestUpdate);
+            packet.Write(position.X);
+            packet.Write(position.Y);
+            packet.Write(id);
+            packet.Send();
+        }
+        public static void ClientRequestUpdateHandler(BinaryReader reader, int whoami)
+        {
+            int x = reader.ReadInt32();
+            int y = reader.ReadInt32();
+            int ID = reader.ReadInt32();
+            NetMessage.SendData(MessageID.TileEntitySharing,-1,-1,null,ID,x,y);
         }
     }
 }

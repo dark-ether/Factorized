@@ -18,7 +18,7 @@ namespace Factorized.UI.Elements
         public bool pressedRightClick = false;
         public int rightClickHoldTicks = 0;
         public int timer = 0;
-        protected static Item[] dummy = new Item[11];
+        protected static Item[] dummy = new Item[58];
         static FItemSlot()
         {
             for(int i = 0;i<11;i++)
@@ -52,10 +52,12 @@ namespace Factorized.UI.Elements
 
         protected override void DrawSelf(SpriteBatch spriteBatch)
         {
+
+            dummy[10] = getItem().SlotItem;
             Vector2 position = GetDimensions().Center()
                 + new Vector2(52f, 52f) * -0.5f * Main.inventoryScale;
 
-            ItemSlot.Draw(spriteBatch,ref getItem().SlotItem, itemContext, position);
+            ItemSlot.Draw(spriteBatch,dummy,itemContext,10, position);
         }
 
         //the cursor item isn't only Main.mouseItem but also player.inventory[58]

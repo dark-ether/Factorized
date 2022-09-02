@@ -23,11 +23,9 @@ namespace Factorized
                 case MessageType.ClientModifyTESlot:
                     MessageHandler.ClientModifyTESlotHandler(reader,whoami);
                     break;
-                /*
-                case MessageType.ServerRejectTEModify:
-                    MessageHandler.ServerRejectTEModifyHandler(reader,whoami);
+                case MessageType.ClientRequestUpdate:
+                    MessageHandler.ClientRequestUpdateHandler(reader,whoami);
                     break;
-                */
                 default:
                     break;
             }

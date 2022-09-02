@@ -391,7 +391,7 @@ namespace Factorized.Machines{
                 slot.SlotItem = myItem;
             }
         }
-        public void GenerateUI(MachineUI UI)
+        public virtual void GenerateUI(MachineUI UI)
         {
             UIPanel inputPanel = new ();
             inputPanel.Width.Set(300,0f);
@@ -418,7 +418,11 @@ namespace Factorized.Machines{
             processingPanel.HAlign = 0.2f;
             processingPanel.VAlign = 0.65f;
 
-            FProgressBar progress = new (UI.fullFire,UI.emptyFire,GetTimerUpdated(),GetLimitUpdated());
+            FProgressBar progress = new FProgressBar (UI.fullFire,UI.emptyFire,GetTimerUpdated(),GetLimitUpdated());
+            progress.Width.Set(50,0f);
+            progress.Height.Set(50,0f);
+            progress.VAlign = 0.5f;
+            progress.HAlign = 0.5f;
             processingPanel.Append(progress);
             UI.Append(processingPanel);
         }
@@ -447,6 +451,7 @@ namespace Factorized.Machines{
                 slot.Width.Set(sizeWithPadding - 2*padding,0f);
                 slot.HAlign = hStart + row * hStep;
                 slot.VAlign = vStart + colunm * vStep;
+                FItemSlot.BIT += (slot) => MessageHandler.ClientRequestUpdateSend(Position);
                 inputPanel.Append(slot);
             }
         }
