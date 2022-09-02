@@ -142,7 +142,8 @@ namespace Factorized.Machines{
             {
                 Slots[i] = reader.ReadMachineSlot();
             }
-            reader.ReadMachineProcess();
+            Process = reader.ReadMachineProcess();
+            TileEntity.ByPosition[Position] = this;
             // add things to update the ui machine again
            //TODO: Test if storing position and getting machine every second is more ergonomic; 
         }
@@ -274,8 +275,9 @@ namespace Factorized.Machines{
             foreach(var item in Process.Produce)
             {
                 Item p = item.Clone();
-                for(int i =0; i< GetSlots(MachineSlotType.Output).Count; i++){
-                    MachineSlot slot =GetSlots(MachineSlotType.Output)[i];
+                List<MachineSlot> output = GetSlots(MachineSlotType.Output);
+                for(int i =0; i< output.Count; i++){
+                    MachineSlot slot = output[i];
                     if(slot.IType == p.type){
                         if(slot.stack + p.stack <= slot.maxStack )
                         {
@@ -287,11 +289,11 @@ namespace Factorized.Machines{
                             slot.SlotItem.stack = slot.maxStack;
                             p.stack += slot.stack - slot.maxStack;
                         }
-                        if(p.stack > 0)
-                        {
-                            noCopies.Add(p);
-                        }
                     }
+                }
+                if(p.stack > 0)
+                {
+                    noCopies.Add(p);
                 }
             }
             foreach (var item in noCopies)
@@ -416,9 +418,7 @@ namespace Factorized.Machines{
             processingPanel.HAlign = 0.2f;
             processingPanel.VAlign = 0.65f;
 
-            FProgressBar progress = new (UI.fullFire,UI.emptyFire,
-                    () =>{if(Process != null) return timer ; else return 0;},
-                    () =>{ if(Process != null) return Process.ProcessingTime; else return 1;});
+            FProgressBar progress = new (UI.fullFire,UI.emptyFire,GetTimerUpdated(),GetLimitUpdated());
             processingPanel.Append(progress);
             UI.Append(processingPanel);
         }
@@ -453,7 +453,9 @@ namespace Factorized.Machines{
         public Func<MachineSlot> GetSlotUpdated(int i, MachineSlotType type)
         {
             return () => {
-                TileEntity test = TileEntity.ByPosition[Position];
+                TileEntity test;
+                TileEntity.ByPosition.TryGetValue(Position,out test);
+                if(test == null) return new(MachineSlotType.Input);
                 if(test is MachineTE)
                 {
                     MachineTE newTE = (MachineTE)test;
@@ -462,6 +464,31 @@ namespace Factorized.Machines{
                 {
                     return GetSlots(type)[i];
                 }
+            };
+        }
+        public Func<int> GetTimerUpdated()
+        {
+            return () => 
+            {
+                TileEntity newTE; 
+                TileEntity.ByPosition.TryGetValue(Position, out newTE);
+                if(newTE == null) return 0;
+                if(!(newTE is MachineTE)) return 0;
+                if(((MachineTE)newTE).Process == null) return 0;
+                else return ((MachineTE)newTE).timer;
+            };
+        }
+        public Func<int> GetLimitUpdated()
+        {
+            return () => 
+            {
+                TileEntity newTE;
+                TileEntity.ByPosition.TryGetValue(Position,out newTE);
+                if(newTE == null) return 1;
+                if(!(newTE is MachineTE)) return 1;
+                MachineTE m = (MachineTE)newTE;
+                if(m.Process == null) return 1;
+                else return m.Process.ProcessingTime;
             };
         }
     }

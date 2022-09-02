@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using Terraria;
+using Factorized.Machines;
+using Terraria.DataStructures;
+
 namespace Factorized.Utility
 {  
     public static class Lib
@@ -28,6 +31,14 @@ namespace Factorized.Utility
                 myClone[i] = array[i].Clone();
             }
             return myClone;
+        }
+        public static MachineTE GetMachineTE(Point16 pos)
+        {
+            TileEntity i;
+            TileEntity.ByPosition.TryGetValue(pos,out i);
+            if(i == null) return null;
+            if(!(i is MachineTE)) return null;
+            return (MachineTE)i;
         }
     }
 }

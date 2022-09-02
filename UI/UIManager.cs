@@ -19,7 +19,7 @@ namespace Factorized.UI{
         internal static UserInterface machineInterface; //user interface
         internal static MachineUI currentMachineUI; // machine ui in this case a melter
         private static GameTime _lastUpdateUiGameTime;
-        public static MachineTE machine;
+        public static Point16 machinePos;
         public static List<MachineSlot>Copy;
         public static Item [] outputCopy;
         private static string visibleUI = "";
@@ -47,6 +47,7 @@ namespace Factorized.UI{
             if (machineInterface?.CurrentState != null){// checking for nullity
                 machineInterface.Update(gameTime);
                 if(visibleUI == "machineUI"){
+                    MachineTE machine = Lib.GetMachineTE(machinePos);
                     if(!Main.playerInventory){
                     hideMachineUI();
                     }
@@ -54,8 +55,8 @@ namespace Factorized.UI{
                         hideMachineUI();
                         return;
                     }
-                    Vector2 melterPosition = new Vector2(UIManager.machine.Position.X*16,
-                        UIManager.machine.Position.Y*16);//changing to world coordinates
+                    Vector2 melterPosition = new Vector2(machine.Position.X*16,
+                    machine.Position.Y*16);//changing to world coordinates
                     float distance = Vector2.Distance(melterPosition,Main.LocalPlayer.Center);
                     if(distance > 5*16){//5 tiles
                         hideMachineUI();
@@ -89,9 +90,10 @@ namespace Factorized.UI{
             int machineX = x - clickedTile.TileFrameX/18;
             int machineY = y - clickedTile.TileFrameY/18;
             TileEntity target;
-            if (!TileEntity.ByPosition.TryGetValue(new Point16(machineX,machineY),out target)) return;
+            machinePos = new Point16(machineX,machineY);
+            if (!TileEntity.ByPosition.TryGetValue(machinePos,out target)) return;
             if (!(target is MachineTE)) return;
-            machine = (MachineTE) target;
+            MachineTE machine = (MachineTE) target;
             Copy = new (machine.GetSlots());
             machineInterface?.SetState(currentMachineUI);
         }
@@ -100,7 +102,7 @@ namespace Factorized.UI{
         {
             visibleUI = "";
             machineInterface?.SetState(null);
-            machine = null;
+            machinePos = new ();
         }
 
         public override void OnWorldUnload()
@@ -109,6 +111,7 @@ namespace Factorized.UI{
         }
         public static void machineSynchronizer(FItemSlot target)
         {
+            MachineTE machine = Lib.GetMachineTE(machinePos);
             int? index = null;
             for (int i=0;i< machine.GetSlots().Count;i++)
             {
