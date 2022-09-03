@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using Factorized.Utility;
 using Factorized.Machines;
+using Terraria.DataStructures;
+
 namespace Factorized.Net {
     public static class Net
     {
@@ -134,17 +136,53 @@ namespace Factorized.Net {
         public static void Write(this BinaryWriter writer,MachineProcess process)
         {
             writer.Write(process.ProcessingTime);
-            writer.Write(process.Consume);
-            writer.Write(process.Produce);
-            TagIO.Write(process.Properties,writer);
+            if(process.Consume == null){
+                writer.Write(false);
+            }
+            else{
+                writer.Write(true);
+                writer.Write(process.Consume);
+            }
+            if(process.Produce!= null){
+                writer.Write(true);
+                writer.Write(process.Produce);
+            }
+            else
+            {
+                writer.Write(false);
+            }
+            if(process.Properties == null){
+                writer.Write(false);
+            }else{
+                writer.Write(true);
+                TagIO.Write(process.Properties,writer);
+            }
         }
         public static MachineProcess ReadMachineProcess(this BinaryReader reader)
         {
             MachineProcess r = new ();
             r.ProcessingTime = reader.ReadInt32();
-            r.Consume = reader.ReadListOfItems();
-            r.Produce = reader.ReadListOfItems();
-            r.Properties = TagIO.Read(reader);
+            if(reader.ReadBoolean()){
+                r.Consume = reader.ReadListOfItems();
+            }
+            else
+            {
+                r.Consume = new ();
+            }
+            if(reader.ReadBoolean()){
+                r.Produce = reader.ReadListOfItems();
+            }
+            else
+            {
+                r.Produce = new ();
+            }
+            if(reader.ReadBoolean()){
+                r.Properties = TagIO.Read(reader);
+            }
+            else 
+            {
+                r.Properties = new ();
+            }
             return r;
         }
         public static void Write(this BinaryWriter writer, List<Item> inp)
@@ -164,6 +202,16 @@ namespace Factorized.Net {
                 r.Add(ItemIO.Receive(reader,true));
             }
             return r;
+        }
+        public static Point16 ReadPoint16(this BinaryReader reader)
+        {
+            int x = reader.ReadInt16();
+            return new Point16 (x,reader.ReadInt16());
+        }
+        public static void Write(this BinaryWriter writer, Point16 pos)
+        {
+            writer.Write(pos.X);
+            writer.Write(pos.Y);
         }
     }
 }

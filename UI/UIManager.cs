@@ -12,16 +12,16 @@ using Factorized.Utility;
 using Factorized.Net;
 using Terraria.ModLoader.IO;
 using Factorized.UI.Elements;
+using Factorized.Net.Client;
 
 namespace Factorized.UI{
     public class UIManager : ModSystem
     {
         internal static UserInterface machineInterface; //user interface
-        internal static MachineUI currentMachineUI; // machine ui in this case a melter
+        internal static MachineUI currentMachineUI;
         private static GameTime _lastUpdateUiGameTime;
-        public static Point16 machinePos;
+        public static Point16 MP;
         public static List<MachineSlot>Copy;
-        public static Item [] outputCopy;
         private static string visibleUI = "";
 
         public override void Load()
@@ -47,7 +47,7 @@ namespace Factorized.UI{
             if (machineInterface?.CurrentState != null){// checking for nullity
                 machineInterface.Update(gameTime);
                 if(visibleUI == "machineUI"){
-                    MachineTE machine = Lib.GetMachineTE(machinePos);
+                    var machine = MachineTE.Get(MP);
                     if(!Main.playerInventory){
                     hideMachineUI();
                     }
@@ -90,10 +90,12 @@ namespace Factorized.UI{
             int machineX = x - clickedTile.TileFrameX/18;
             int machineY = y - clickedTile.TileFrameY/18;
             TileEntity target;
-            machinePos = new Point16(machineX,machineY);
-            if (!TileEntity.ByPosition.TryGetValue(machinePos,out target)) return;
+            MP = new Point16(machineX,machineY);
+            if (!TileEntity.ByPosition.TryGetValue(MP,out target)) return;
             if (!(target is MachineTE)) return;
             MachineTE machine = (MachineTE) target;
+            MIS.Pos = MP;
+            CMH.Subscribe(MP);
             Copy = new (machine.GetSlots());
             machineInterface?.SetState(currentMachineUI);
         }
@@ -102,31 +104,12 @@ namespace Factorized.UI{
         {
             visibleUI = "";
             machineInterface?.SetState(null);
-            machinePos = new ();
+            CMH.Unsubscribe();
         }
 
         public override void OnWorldUnload()
         {
             machineInterface?.SetState(null);
-        }
-        public static void machineSynchronizer(FItemSlot target)
-        {
-            MachineTE machine = Lib.GetMachineTE(machinePos);
-            int? index = null;
-            for (int i=0;i< machine.GetSlots().Count;i++)
-            {
-                if(Copy[i].stack != machine.GetSlots()[i].stack
-                    || Copy[i].IType != machine.GetSlots()[i].IType)
-                {
-                    index = i;
-                    break;
-                }
-            }
-            if(index != null ) {
-                MessageHandler.ClientModifyTESlotSend(machine.ID,
-                    (int)index,machine.GetItems()[(int)index]);
-            }
-            UIManager.Copy = new (machine.GetSlots());
         }
     }
 }

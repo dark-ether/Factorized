@@ -12,7 +12,7 @@ namespace Factorized.Machines
         public int fuel {get; protected set;} = 0;
         public abstract Dictionary<int,int> fuelTypes {get;}
 
-        protected override void OnUpdate()
+        protected override void OnPreUpdate()
         {
             if(fuel <= 0)
             {

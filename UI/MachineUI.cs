@@ -29,10 +29,9 @@ namespace Factorized.UI {
 
         public override void OnActivate()
         {
-            MachineTE machine = Lib.GetMachineTE(UIManager.machinePos);
+            var machine = MachineTE.Get(UIManager.MP);
             if (machine == null) return;
             machine?.GenerateUI(this);
-            FItemSlot.PIT += UIManager.machineSynchronizer;
         }
 
 
@@ -40,7 +39,6 @@ namespace Factorized.UI {
         {
             base.OnDeactivate();
             this.RemoveAllChildren();
-            FItemSlot.PIT -= UIManager.machineSynchronizer;
         }
 
         public override void OnInitialize()

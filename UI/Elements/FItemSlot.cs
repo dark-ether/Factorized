@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework;
 using System;
 using Factorized;
 using Factorized.Machines;
+using Terraria.ID;
+using Factorized.Net.Client;
 
 namespace Factorized.UI.Elements
 {
@@ -65,6 +67,7 @@ namespace Factorized.UI.Elements
         {
             if(evt.Target != this) return;
             RaiseBITEvent();
+            base.Click(evt);
             ref Item remove = ref getItem().SlotItem;
             if (Main.mouseItem.IsAir)
             {
@@ -123,25 +126,28 @@ namespace Factorized.UI.Elements
         {
             if(evt.Target != this) return;
             RaiseBITEvent();
+            base.RightClick(evt);
             ref Item remove = ref getItem().SlotItem;
-            if(Main.mouseItem.IsAir)
-            {
-                if(remove.IsAir) return;
-                else {
-                    remove.stack -= 1;
-                    Main.mouseItem = remove.Clone();
-                    Main.mouseItem.stack = 1;
-                    Main.LocalPlayer.inventory[58] = Main.mouseItem;
+            if(Main.netMode == NetmodeID.SinglePlayer){
+                if(Main.mouseItem.IsAir)
+                {
+                    if(remove.IsAir) return;
+                    else {
+                        remove.stack -= 1;
+                        Main.mouseItem = remove.Clone();
+                        Main.mouseItem.stack = 1;
+                        Main.LocalPlayer.inventory[58] = Main.mouseItem;
+                    }
+                } else
+                {
+                    if (Main.mouseItem.type == remove.type ){
+                        if (Main.mouseItem.stack >= Main.mouseItem.maxStack || remove.stack <= 0) return;
+                        remove.stack -=1;
+                        Main.mouseItem.stack += 1;
+                        Main.LocalPlayer.inventory[58] = Main.mouseItem;
+                    }
                 }
-            } else
-            {
-                if (Main.mouseItem.type == remove.type ){
-                    if (Main.mouseItem.stack >= Main.mouseItem.maxStack || remove.stack <= 0) return;
-                    remove.stack -=1;
-                    Main.mouseItem.stack += 1;
-                    Main.LocalPlayer.inventory[58] = Main.mouseItem;
-                }
-            }
+            } 
             RaisePITEvent();
         }
         

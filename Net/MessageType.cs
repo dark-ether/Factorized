@@ -3,7 +3,9 @@ namespace Factorized.Net
 {
     public enum MessageType 
     {
-        ClientModifyTESlot,
-        ClientRequestUpdate,
+        ClientSubscribeToMachine,
+        ClientUnsubscribeToMachine,
+        ClientModifyTESlotRequest,
+        ServerModifyTESlot,
     }
 }

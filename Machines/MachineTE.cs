@@ -14,6 +14,8 @@ using Factorized.UI;
 using Factorized.UI.Elements;
 using Terraria.UI;
 using Terraria.GameContent.UI.Elements;
+using Factorized.Net.Server;
+using Factorized.Net.Client;
 
 namespace Factorized.Machines{
     public delegate void MachineOperation(MachineTE target);
@@ -42,13 +44,15 @@ namespace Factorized.Machines{
 
         public static event MachineOperation OnMachinePlace;
         public static event MachineOperation OnMachineStart;
-        public static event MachineOperation OnMachineUpdate;
+        public static event MachineOperation OnMachinePreUpdate;
+        public static event MachineOperation OnMachinePostUpdate;
         public static event MachineOperation OnMachineProgress;
         public static event MachineOperation OnMachineFinish;
 
         public event MachineOperation OnPlaceEvent;
         public event MachineOperation OnStartEvent;
-        public event MachineOperation OnUpdateEvent;
+        public event MachineOperation OnPreUpdateEvent;
+        public event MachineOperation OnPostUpdateEvent;
         public event MachineOperation OnProgressEvent;
         public event MachineOperation OnFinishEvent;
 
@@ -58,7 +62,8 @@ namespace Factorized.Machines{
 
         protected virtual void OnPlace(){}
         protected virtual void OnStart(){}
-        protected virtual void OnUpdate(){}
+        protected virtual void OnPreUpdate(){}
+        protected virtual void OnPostUpdate(){}
         protected virtual void OnProgress(){}
         protected virtual bool CanProgress(){return true;}
         protected virtual void OnFinish(){}
@@ -142,7 +147,10 @@ namespace Factorized.Machines{
             {
                 Slots[i] = reader.ReadMachineSlot();
             }
-            Process = reader.ReadMachineProcess();
+            if(reader.ReadBoolean()){
+                Process = reader.ReadMachineProcess();
+            }else Process = null;
+            timer = reader.ReadInt32();
             TileEntity.ByPosition[Position] = this;
             // add things to update the ui machine again
            //TODO: Test if storing position and getting machine every second is more ergonomic; 
@@ -152,7 +160,16 @@ namespace Factorized.Machines{
             foreach(MachineSlot slot in Slots){
                 writer.Write(slot);
             }
+
+            if(Process == null)
+            {
+                writer.Write(false);
+            }
+            else{
+            writer.Write(true);
             writer.Write(Process);
+            }
+            writer.Write(timer);
         }
         
         public override void OnNetPlace(){
@@ -169,6 +186,15 @@ namespace Factorized.Machines{
         }
 
         public override sealed void Update(){
+            if(OnMachinePreUpdate != null)
+            {
+                OnMachinePreUpdate(this);
+            }
+            if(OnPreUpdateEvent != null)
+            {
+                OnPreUpdateEvent(this);
+            }
+            OnPreUpdate();
             if(Process == null)
             {
                 _Start();
@@ -186,16 +212,17 @@ namespace Factorized.Machines{
                     _Progress();
                 }
             }
-            if(OnMachineUpdate != null)
+            if(OnMachinePostUpdate != null)
             {
-                OnMachineUpdate(this);
+                OnMachinePostUpdate(this);
             }
-            if(OnUpdateEvent != null)
+            if(OnPostUpdateEvent != null)
             {
-                OnUpdateEvent(this);
+                OnPostUpdateEvent(this);
             }
-            OnUpdate();
-            NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
+            OnPostUpdate();
+            SMH.UpdateSend(Position);
+            //NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
         }
         protected void _Start()
         {
@@ -467,12 +494,11 @@ namespace Factorized.Machines{
                 float vStep = sizeWithPadding/inputPanel.Height.Pixels;
                 int colunm = i / rowFit;
                 int row = i % rowFit;
-                FItemSlot slot = new ( GetSlotUpdated(i,type),context);
+                MIS slot =  new (i,type ,context);
                 slot.Height.Set(sizeWithPadding - 2*padding,0f);
                 slot.Width.Set(sizeWithPadding - 2*padding,0f);
                 slot.HAlign = hStart + row * hStep;
                 slot.VAlign = vStart + colunm * vStep;
-                FItemSlot.BIT += (slot) => MessageHandler.ClientRequestUpdateSend(Position,ID);
                 inputPanel.Append(slot);
             }
         }
@@ -500,8 +526,10 @@ namespace Factorized.Machines{
                 TileEntity.ByPosition.TryGetValue(Position, out newTE);
                 if(newTE == null) return 0;
                 if(!(newTE is MachineTE)) return 0;
-                if(((MachineTE)newTE).Process == null) return 0;
-                else return ((MachineTE)newTE).timer;
+                if(((MachineTE)newTE).Process == null)return 0;
+                else {
+                 return ((MachineTE)newTE).timer;
+                }
             };
         }
         public Func<int> GetLimitUpdated()
@@ -517,5 +545,22 @@ namespace Factorized.Machines{
                 else return m.Process.ProcessingTime;
             };
         }
+        public static MachineTE Get(int id)
+        {
+            TileEntity te;
+            TileEntity.ByID.TryGetValue(id,out te);
+            if(te == null) return null;
+            if(!(te is MachineTE)) return null;
+            return (MachineTE) te;
+        }
+        public static MachineTE Get(Point16 pos)
+        {
+            TileEntity te;
+            TileEntity.ByPosition.TryGetValue(pos,out te);
+            if(te == null) return null;
+            if(!(te is MachineTE)) return null;
+            return (MachineTE) te;
+        }
+        
     }
 }
