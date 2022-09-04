@@ -1,9 +1,12 @@
 using Terraria.ModLoader;
 using Terraria;
 using Factorized.Utility;
+using Terraria.ModLoader.IO;
 using System.Collections.Generic;
 using Terraria.GameContent.UI.Elements;
 using Factorized.UI;
+using System.IO;
+
 
 namespace Factorized.Machines
 {
@@ -31,9 +34,13 @@ namespace Factorized.Machines
                     if(slot.IType == fuelType.Key)
                     {
                         fuel += fuelType.Value;
+                        slot.SlotItem.stack -= 1;
+                        if(slot.stack <= 0) slot.SlotItem = new Item();
+                        goto OUTSIDE;
                     }
                 }
             }
+        OUTSIDE:;
         }
         public override void GenerateUI(MachineUI UI)
         {
@@ -48,6 +55,31 @@ namespace Factorized.Machines
             t.Width.Set(100,0f);
             fuelPanel.Append(t);
             UI.Append(fuelPanel);
+        }
+        public override void NetSend(BinaryWriter writer)
+        {
+            base.NetSend(writer);
+            writer.Write(fuel);
+        }
+        public override void NetReceive(BinaryReader reader)
+        {
+            base.NetReceive(reader);
+            fuel = reader.ReadInt32();
+        }
+        public override void SaveData(TagCompound tag)
+        {
+            base.SaveData(tag);
+            tag["fuel"] = fuel;
+        }
+        public override void LoadData(TagCompound tag)
+        {
+            base.LoadData(tag);
+            if(tag.ContainsKey("fuel")) fuel = tag.GetInt("fuel");
+            else fuel = 0;
+        }
+        protected override bool CanProgress()
+        {
+            return base.CanProgress() && fuel > 0;
         }
     } 
 }
