@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using System.Reflection;
 using System.Linq;
-using System.IO;
+using System;
 using Terraria;
 using Factorized.Machines;
 using Terraria.DataStructures;
@@ -9,36 +10,12 @@ namespace Factorized.Utility
 {  
     public static class Lib
     {
-        public static Dictionary<T1,T2> mergeDictionariesNoRepeats<T1,T2>(IEnumerable<Dictionary<T1,T2>> dicts)
+        public static bool HasAncestor(Type searched,Type ancestor)
         {
-            Dictionary<T1,T2> mergedDictionaries = new ();
-            foreach(var dict in dicts)
-            {
-                foreach(var keyValuePair in dict){
-                    if (!mergedDictionaries.ContainsKey(keyValuePair.Key))
-                    {
-                        mergedDictionaries[keyValuePair.Key] = keyValuePair.Value;
-                    }
-                }
-            }
-            return mergedDictionaries;
-        }
-        public static Item[] cloneItemArray(Item[] array) 
-        {
-            Item[] myClone = new Item[array.Length];
-            for(int i = 0; i < array.Length ; i++) 
-            {
-                myClone[i] = array[i].Clone();
-            }
-            return myClone;
-        }
-        public static MachineTE GetMachineTE(Point16 pos)
-        {
-            TileEntity i;
-            TileEntity.ByPosition.TryGetValue(pos,out i);
-            if(i == null) return null;
-            if(!(i is MachineTE)) return null;
-            return (MachineTE)i;
+            if(searched == typeof(System.Object)&& ancestor != typeof(System.Object)) return false;
+            if(ancestor == typeof(System.Object)) return true;
+            if(searched == ancestor ) return true;
+            return HasAncestor(searched.BaseType,ancestor);
         }
     }
 }

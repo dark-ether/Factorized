@@ -10,6 +10,23 @@ namespace Factorized.Machines
         public List<Item> Consume { get; set;} = new ();
         public List<Item> Produce { get; set;} = new ();
         public TagCompound Properties {get; set;} = new ();
+        public MachineProcess(){}
+        public MachineProcess(MachineProcess toClone)
+        {
+            ProcessingTime = toClone.ProcessingTime;
+            foreach(var item in toClone.Consume)
+            {
+                Consume.Add(item.Clone());
+            }
+            foreach (var item in toClone.Produce )
+            {
+                Produce.Add(item.Clone());
+            }
+            foreach(var prop in toClone.Properties)
+            {
+                Properties.Set(prop.Key, prop.Value);
+            }
+        }
     }
     public class MachineProcessSerializer : TagSerializer<MachineProcess, TagCompound>
     {

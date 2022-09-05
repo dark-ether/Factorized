@@ -17,7 +17,7 @@ namespace Factorized.Machines
 
         protected override void OnPreUpdate()
         {
-            if(fuel <= 0)
+            if(fuel <= 0 && Process != null)
             {
                 tryRefreshFuel();
             }else
