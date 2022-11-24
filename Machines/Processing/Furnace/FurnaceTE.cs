@@ -41,6 +41,7 @@ namespace Factorized.Machines.Processing.Furnace
                         FurnaceTE.Recipes.Add(p);
                     }
                 }
+                ModContent.GetInstance<Factorized>().Logger.DebugFormat("elemento:{0}",recipe.DToString());
             }
         }
 

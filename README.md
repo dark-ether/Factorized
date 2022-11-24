@@ -11,13 +11,9 @@ factorized is a terraria mod that aims to make automation possible and necessary
 - new pylons
 - bags
 
-###Refactor machines
-
-needs to 
-- produce items with a chance
-- consume items with a chance
-- consume energy and similar non items
-- produce energy and similar non items
-- work on multiplayer 
-- have a functional UI
-- be extensible 
+### Refactor machines
+looking a little more it really is a case of YAGNI
+#### needs
+- create item with chance
+- create multiple items 
+- create items

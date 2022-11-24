@@ -6,6 +6,7 @@ namespace Factorized.Machines.Processing.Furnace
 {
     public class FurnaceItem : ModItem
     {
+        public override string Name => "Furnace";
         public override string Texture => "Factorized/Machines/Processing/Furnace/Furnace";
 
         public override void SetStaticDefaults()
