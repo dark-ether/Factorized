@@ -1,3 +1,4 @@
+/*
 using Factorized.Net.Server;
 using Terraria;
 using Terraria.ModLoader;
@@ -17,7 +18,7 @@ namespace Factorized.Net.Client {
         public static void Subscribe(Point16 pos)
         {
             if(Main.netMode == NetmodeID.SinglePlayer) return;
-            ModPacket packet = Factorized.mod.GetPacket();
+            ModPacket packet = Factorized.Instance.GetPacket();
             packet.Write((int)MessageType.ClientSubscribeToMachine);
             packet.Write(pos);
             packet.Send();
@@ -25,7 +26,7 @@ namespace Factorized.Net.Client {
         public static void Unsubscribe()
         {
             if(Main.netMode == NetmodeID.SinglePlayer) return;
-            ModPacket packet = Factorized.mod.GetPacket();
+            ModPacket packet = Factorized.Instance.GetPacket();
             packet.Write((int)MessageType.ClientUnsubscribeToMachine);
             packet.Send();
         }
@@ -39,7 +40,7 @@ namespace Factorized.Net.Client {
             Item slotItem = m.GetSlots(type)[slot].SlotItem;
             Item mouseItem = Main.mouseItem;
             if(Main.netMode == NetmodeID.SinglePlayer){UpdateItems(); return;}
-            ModPacket packet = Factorized.mod.GetPacket();
+            ModPacket packet = Factorized.Instance.GetPacket();
             packet.Write((int)MessageType.ClientModifyTESlotRequest);
             packet.Write(pos);
             packet.Write(slot);
@@ -104,4 +105,4 @@ namespace Factorized.Net.Client {
             }
         }
     }
-}
+}*/

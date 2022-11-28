@@ -4,22 +4,22 @@ using Terraria.ID;
 using Factorized.Utility;
 using Terraria;
 using System.Text.RegularExpressions;
+using Terraria.ModLoader.IO;
 
 namespace Factorized.Machines.Processing.Furnace 
 {
     public class FurnaceTE : MachineTE
     {
         public override int ValidTile => ModContent.TileType<FurnaceTile>();
+        public override int inputSlotsNumber => 2;
+        public override int outputSlotsNumber => 1;
+        public override List<TagCompound> setupMachineProcesses()
+        {
+            //TODO: implement recipes
+            return new ();
+        }
 
-        public override List<MachineProcess> allProcesses => Recipes;
-
-        public override Dictionary<MachineSlotType, int> SlotsComposition => 
-            new (){
-                [MachineSlotType.Input] = 2, 
-                [MachineSlotType.Output] = 1
-            };
-        public static List<MachineProcess> Recipes;
-        public static void SetupRecipes()
+        /*public static void SetupRecipes()
         {
             FurnaceTE.Recipes = new ();
             List<int> bars = new ();
@@ -41,9 +41,7 @@ namespace Factorized.Machines.Processing.Furnace
                         FurnaceTE.Recipes.Add(p);
                     }
                 }
-                ModContent.GetInstance<Factorized>().Logger.DebugFormat("elemento:{0}",recipe.DToString());
             }
-        }
-
+        }*/
     }
 }

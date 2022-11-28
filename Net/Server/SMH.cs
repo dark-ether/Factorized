@@ -1,3 +1,4 @@
+/*
 using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
@@ -152,10 +153,10 @@ namespace Factorized.Net.Server
 
         private static void SendPermission(int whoami)
         {
-            ModPacket packet = Factorized.mod.GetPacket();
+            ModPacket packet = Factorized.Instance.GetPacket();
             packet.Write((int)MessageType.ServerModifyTESlot);
             packet.Send(whoami);
         }
     }
 }
-
+*/

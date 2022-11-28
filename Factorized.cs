@@ -8,17 +8,17 @@ using System;
 using ReLogic.Content.Sources;
 using System.IO;
 using Factorized.Net;
-using Factorized.Net.Server;
-using Factorized.Net.Client;
 using System.Diagnostics;
 using System.Reflection;
 
 namespace Factorized
-{ 
+{
     public class Factorized : Mod
     {
-        public static Factorized mod = ModContent.GetInstance<Factorized>();
-        public delegate ref Item ItemReferrer();
+        public static Factorized Instance = ModContent.GetInstance<Factorized>();
+        public FUIController UI;
+        public FNetController Net;
+        /*
         public override void HandlePacket(BinaryReader reader, int whoami)
         {
             
@@ -49,8 +49,11 @@ namespace Factorized
                 throw e;
             }
         }
+        */
     }
-    public delegate float FloatReferrer();
-    public delegate int IntReferrer();
+
+    public delegate ref float FloatReferrer();
+    public delegate ref int IntReferrer();
+    public delegate ref Item ItemReferrer();
 }
 

@@ -8,6 +8,7 @@ namespace Factorized.Machines.Processing.HeavyFurnace
 {
     public class HeavyFurnaceTile : MachineTile
     {
+        public override string Texture => "Factorized/Machines/Processing/HeavyFurnace/HeavyFurnace";
         public override MachineTE getTileEntity() => ModContent.GetInstance<HeavyFurnaceTE>();
         public override int getItemType() => ModContent.ItemType<Machines.Processing.HeavyFurnace.HeavyFurnaceItem>();
     }

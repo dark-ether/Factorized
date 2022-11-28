@@ -12,8 +12,7 @@ using Factorized.Utility;
 using Factorized.Net;
 using Terraria.ModLoader.IO;
 using Factorized.UI.Elements;
-using Factorized.Net.Client;
-
+/*
 namespace Factorized.UI{
     public class UIManager : ModSystem
     {
@@ -21,8 +20,6 @@ namespace Factorized.UI{
         internal static MachineUI currentMachineUI;
         private static GameTime _lastUpdateUiGameTime;
         public static Point16 MP;
-        public static List<MachineSlot>Copy;
-        private static string visibleUI = "";
 
         public override void Load()
         {
@@ -84,7 +81,6 @@ namespace Factorized.UI{
 
         public static void showMachineUI(int x, int y){
             hideMachineUI();
-            visibleUI = "machineUI";
             Main.playerInventory = true;
             Tile clickedTile = Main.tile[x,y];//this code finds the topleft tile of a multitile
             int machineX = x - clickedTile.TileFrameX/18;
@@ -102,7 +98,6 @@ namespace Factorized.UI{
 
         public static void hideMachineUI()
         {
-            visibleUI = "";
             machineInterface?.SetState(null);
             CMH.Unsubscribe();
         }
@@ -112,4 +107,4 @@ namespace Factorized.UI{
             machineInterface?.SetState(null);
         }
     }
-}
+}*/

@@ -19,17 +19,14 @@ namespace Factorized.UI {
     public class MachineUI : UIState
     {
 
-        public Asset<Texture2D> fullFire;
-        public Asset<Texture2D> emptyFire;
-        public bool gotEmptyFire;
-        public bool gotFullfire;
-        private void itemSlotConfig(int index,int numberofSlots, FItemSlot itemSlot){
-            
+        public Point16 MP;
+        public MachineUI(){}
+        public MachineUI(Point16 pos){
+            MP = pos;
         }
-
         public override void OnActivate()
         {
-            var machine = MachineTE.Get(UIManager.MP);
+            var machine = MachineTE.Get(MP);
             if (machine == null) return;
             machine?.GenerateUI(this);
         }
@@ -43,11 +40,7 @@ namespace Factorized.UI {
 
         public override void OnInitialize()
         {
-            gotFullfire = ModContent.RequestIfExists<Texture2D>(
-                    "Factorized/Assets/full_fire",out fullFire, AssetRequestMode.ImmediateLoad);
-            gotEmptyFire = ModContent.RequestIfExists<Texture2D>(
-                    "Factorized/Assets/empty_fire",out emptyFire,AssetRequestMode.ImmediateLoad);
-
+            
         }
     }
 }

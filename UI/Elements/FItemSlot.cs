@@ -6,8 +6,7 @@ using System;
 using Factorized;
 using Factorized.Machines;
 using Terraria.ID;
-using Factorized.Net.Client;
-
+/*
 namespace Factorized.UI.Elements
 {
     public class FItemSlot : UIElement
@@ -196,4 +195,4 @@ namespace Factorized.UI.Elements
             }
         }
     }
-}
+}*/

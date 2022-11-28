@@ -1,4 +1,3 @@
-using Factorized.Machines.Processing.Furnace;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Core;
 using System;

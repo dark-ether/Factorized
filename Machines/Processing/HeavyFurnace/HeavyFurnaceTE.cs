@@ -16,22 +16,14 @@ namespace Factorized.Machines.Processing.HeavyFurnace
     {
         public override int ValidTile => ModContent.TileType<HeavyFurnaceTile>();
 
-        public override List<MachineProcess> allProcesses => Recipes;
+        public override int inputSlotsNumber => 2;
 
-        public override Dictionary<MachineSlotType, int> SlotsComposition { 
-            get =>  new (){[MachineSlotType.Input] = 3 , [MachineSlotType.Output] = 2};
-        }
+        public override int outputSlotsNumber => 2;
 
-        public static List<MachineProcess> Recipes = new ();
-        static HeavyFurnaceTE()
+        public override List<TagCompound> setupMachineProcesses()
         {
-            MachineProcess process = new();
-            Item item = new (ItemID.SandBlock,1);
-            process.Consume.Add(item);
-            item = new (ItemID.Glass,2);
-            process.Produce.Add(item);
-            process.ProcessingTime = 5*60;
-            Recipes.Add(process);
+            //TODO implement recipes;
+           return new(); 
         }
     }
 }

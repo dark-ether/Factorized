@@ -5,7 +5,6 @@ using Terraria.ModLoader;
 using Terraria.Localization;
 using Terraria.ObjectData;
 using Terraria.Enums;
-using Terraria.Audio;
 using Microsoft.Xna.Framework;
 using Factorized.UI;
 using Factorized.Utility;
@@ -17,10 +16,10 @@ namespace Factorized.Machines{
         public override void SetStaticDefaults()
         {
             Main.tileSolid[Type] = false;
-			Main.tileBlockLight[Type] = true;
-			Main.tileLighted[Type] = true;
+			      Main.tileBlockLight[Type] = true;
+			      Main.tileLighted[Type] = true;
             Main.tileFrameImportant[Type] = true;
-	        //ItemDrop = ModContent.ItemType<content.items.placeables.melter>();
+	          //ItemDrop = ModContent.ItemType<content.items.placeables.melter>();
             TileObjectData.newTile.CopyFrom(TileObjectData.Style2x2);
             TileObjectData.newTile.LavaDeath = false;
             TileObjectData.newTile.WaterDeath = false;
@@ -93,7 +92,7 @@ namespace Factorized.Machines{
             }
             
             if(Vector2.Distance(playerPosition,tilePosition)< 5 *16){
-                UIManager.showMachineUI(x,y);
+                Factorized.Instance.UI.showMachine(TileUtils.GetTileOrigin(x,y));
                 return true;
             }
             return false;
@@ -108,6 +107,7 @@ namespace Factorized.Machines{
             {
                 if(!item.IsAir)
                 {
+                    //TODO: switch to the new newItem overload which takes an item
                     Item.NewItem(new EntitySource_TileBreak(i,j),i*16,j*16,48,32,item.type,item.stack);
                 }
             }

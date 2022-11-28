@@ -4,6 +4,7 @@ using Terraria.ModLoader.IO;
 using Terraria.ID;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Terraria.DataStructures;
 using System.Linq;
 using System.IO;
@@ -14,24 +15,44 @@ using Factorized.UI;
 using Factorized.UI.Elements;
 using Terraria.UI;
 using Terraria.GameContent.UI.Elements;
-using Factorized.Net.Server;
-using Factorized.Net.Client;
+using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 
 namespace Factorized.Machines{
-    public delegate void MachineOperation(MachineTE target);
     public delegate bool MachineValidation(MachineTE target);
+    public class PersistentAttribute : Attribute
+    {
+    }
+    
+    public class MachineSlot : TagSerializable {
+      public Item item;
+      public int type {get => item.type ; set => item.type = value;}
+      public int stack {get => item.stack; set => item.stack = value;}
+      public int maxStack {get => item.maxStack; set => item.maxStack = value;}
+      public bool IsAir {get => item.IsAir;}
+      public MachineSlot() {
+        item = new Item ();
+      }
+      public ItemReferrer itemRef() {
+        return () => ref item;
+      }
+      public static readonly Func<TagCompound,MachineSlot> DESERIALIZER = Load;
+      public TagCompound SerializeData()
+      {
+            return new TagCompound {["item"] = item};
+      }
+      public static MachineSlot Load(TagCompound tag) {
+        MachineSlot t = new ();
+        t.item = tag.Get<Item>("item");
+        return t;
+      }
+    }
     /// <summary>
-    /// use this to create a machine
+    /// Basic machine type,when inheriting from it, 
+    /// mark any field necessary to behave properly with the PersistentAttribute
     /// </summary>
     public abstract class MachineTE : ModTileEntity
     {
-        protected List<MachineSlot> Slots {get; set;}
-        protected MachineProcess Process {get; set;}
-
-        public int timer{
-            get;
-            protected set;
-        }
         public int Height{
             get{return TileObjectData.GetTileData(ValidTile,0).Height;}
         }
@@ -42,24 +63,33 @@ namespace Factorized.Machines{
             get{return TileObjectData.GetTileData(ValidTile,0).Width;}
         }
 
-        public static event MachineOperation OnMachinePlace;
-        public static event MachineOperation OnMachineStart;
-        public static event MachineOperation OnMachinePreUpdate;
-        public static event MachineOperation OnMachinePostUpdate;
-        public static event MachineOperation OnMachineProgress;
-        public static event MachineOperation OnMachineFinish;
+        public static event Action<MachineTE> OnMachinePlace;
+        public static event Action<MachineTE> OnMachineStart;
+        public static event Action<MachineTE> OnMachinePreUpdate;
+        public static event Action<MachineTE> OnMachinePostUpdate;
+        public static event Action<MachineTE> OnMachineProgress;
+        public static event Action<MachineTE> OnMachineFinish;
 
-        public event MachineOperation OnPlaceEvent;
-        public event MachineOperation OnStartEvent;
-        public event MachineOperation OnPreUpdateEvent;
-        public event MachineOperation OnPostUpdateEvent;
-        public event MachineOperation OnProgressEvent;
-        public event MachineOperation OnFinishEvent;
+        public event Action<MachineTE> OnPlaceEvent;
+        public event Action<MachineTE> OnStartEvent;
+        public event Action<MachineTE> OnPreUpdateEvent;
+        public event Action<MachineTE> OnPostUpdateEvent;
+        public event Action<MachineTE> OnProgressEvent;
+        public event Action<MachineTE> OnFinishEvent;
+        public static Dictionary<Type,List<TagCompound>> allProcesses;
+        [Persistent]
+        protected TagCompound currentProcess;
+        [Persistent]
+        public int timer {get; protected set;}
+        [Persistent]
+        public MachineSlot[] inputSlots;
+        [Persistent]
+        public MachineSlot[] outputSlots;
 
         public abstract int ValidTile {get;}
-        public abstract List<MachineProcess> allProcesses{get;}
-        public abstract Dictionary<MachineSlotType,int> SlotsComposition{get;}
-
+        public abstract List<TagCompound> setupMachineProcesses();
+        public abstract int inputSlotsNumber {get;}
+        public abstract int outputSlotsNumber {get;}
         protected virtual void OnPlace(){}
         protected virtual void OnStart(){}
         protected virtual void OnPreUpdate(){}
@@ -70,11 +100,20 @@ namespace Factorized.Machines{
 
         public MachineTE()
         {
+            inputSlots = new MachineSlot[inputSlotsNumber];
+            for (int i = 0; i < inputSlots.Length; i++)
+            {
+                inputSlots[i] = new ();
+            }
+            outputSlots = new MachineSlot [outputSlotsNumber];
+            for (int i = 0; i < outputSlots.Length; i++)
+            {
+                inputSlots[i] = new ();
+            }
         }
 
         protected void _Place()
         {
-            _Setup();
             if(OnMachinePlace != null)
             {
                 OnMachinePlace(this);
@@ -84,17 +123,6 @@ namespace Factorized.Machines{
                 OnPlaceEvent(this);
             }
             OnPlace();
-        }
-        protected virtual void _Setup()
-        {
-            Slots = new ();
-            foreach(var kvp in SlotsComposition)
-            {
-                for(int i=0;i<kvp.Value;i++)
-                {
-                    Slots.Add(new MachineSlot(kvp.Key));
-                }
-            }
         }
         
         public sealed override int Hook_AfterPlacement(int i, int j, int type, int style, int direction, int alternate){
@@ -115,7 +143,6 @@ namespace Factorized.Machines{
 
             return placedEntity;
         }
-
         public override bool IsTileValidForEntity(int x, int y){
             try{
             Tile tileInPosition = Main.tile[x,y];
@@ -129,60 +156,54 @@ namespace Factorized.Machines{
             return false;
         }
 
-        public override void LoadData(TagCompound tag){
-            if (tag.ContainsKey(nameof(Slots)))
-            {
-                Slots = tag.GetList<MachineSlot>(nameof(Slots)).ToList<MachineSlot>();
-            } else _Setup();
-            if (tag.ContainsKey(nameof(Process)))
-            {
-                Process = tag.Get<MachineProcess>(nameof(Process));
-            } else Process = null;
+        public override void Load(){
+          allProcesses = new ();
+        }
+        
+        public override void LoadData(TagCompound tag)
+        {
+          var fields = this.GetType().GetFieldsIwA<PersistentAttribute>();
+          fields
+            .OrderBy(field => field.Name)
+            .ToList()
+            .ForEach(field => {
+                if (tag.ContainsKey(field.Name)) field.SetValue(this,tag[field.Name]);
+                }
+            );
+        
+        }
+
+        public override void SaveData(TagCompound tag){
+          var fields = this.GetType().GetFieldsIwA<PersistentAttribute>();
+          fields
+            .OrderBy(field => field.Name)
+            .ToList()
+            .ForEach(field => tag[field.Name] = field.GetValue(this));
         }
         
         public override void NetReceive(BinaryReader reader){
-            _Setup();
-            int length = reader.ReadInt32();
-            for(int i = 0; i< length;i++)
-            {
-                Slots[i] = reader.ReadMachineSlot();
-            }
-            if(reader.ReadBoolean()){
-                Process = reader.ReadMachineProcess();
-            }else Process = null;
-            timer = reader.ReadInt32();
-            TileEntity.ByPosition[Position] = this;
-            // add things to update the ui machine again
-           //TODO: Test if storing position and getting machine every second is more ergonomic; 
+          TagCompound tag = TagIO.Read(reader);
+          var fields = this.GetType().GetFieldsIwA<PersistentAttribute>();
+          fields
+            .OrderBy(field => field.Name)
+            .ToList()
+            .ForEach( field => field.SetValue(this,tag[field.Name]));
         }
         public override void NetSend(BinaryWriter writer){
-            writer.Write(Slots.Count());
-            foreach(MachineSlot slot in Slots){
-                writer.Write(slot);
-            }
-
-            if(Process == null)
-            {
-                writer.Write(false);
-            }
-            else{
-            writer.Write(true);
-            writer.Write(Process);
-            }
-            writer.Write(timer);
+          TagCompound tag = new ();
+          var fields = this.GetType().GetFieldsIwA<PersistentAttribute>();
+          fields
+            .OrderBy(field => field.Name)
+            .ToList()
+            .ForEach( field => tag[field.Name] = field.GetValue(this));
+          TagIO.Write(tag,writer);
         }
         
         public override void OnNetPlace(){
-           _Setup();
            if(Main.netMode == NetmodeID.Server)
             {
                 NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
             }
-        }
-        
-        public override void SaveData(TagCompound tag){
-            tag[nameof(Slots)] = Slots;
-            tag[nameof(Process)] = Process;
         }
 
         public override sealed void Update(){
@@ -195,16 +216,16 @@ namespace Factorized.Machines{
                 OnPreUpdateEvent(this);
             }
             OnPreUpdate();
-            if(Process == null)
+            if(currentProcess == null)
             {
                 _Start();
-                if(Process != null)
+                if(currentProcess != null)
                 {
                     _Progress();
                 }
             } else
             {
-                if(Process.ProcessingTime < timer)
+                if(currentProcess.GetInt("time") < timer)
                 {
                     _Finish();
                 }else
@@ -221,16 +242,31 @@ namespace Factorized.Machines{
                 OnPostUpdateEvent(this);
             }
             OnPostUpdate();
-            SMH.UpdateSend(Position);
+            //SMH.UpdateSend(Position);
             //NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
         }
         protected void _Start()
         {
-            foreach(var p in allProcesses)
-            {
-                if(ValidateProcess(p))
+            void removeItems(List<(int,int)> toRemove) {
+                foreach (var item in toRemove)
                 {
-                    Process = p;
+                    foreach (var inputSlot in inputSlots) {
+                      var inputItem = inputSlot.item;
+                        if (inputItem.type != item.Item1) continue;
+                        if (inputItem.stack <= item.Item2) inputItem.TurnToAir();
+                        else {
+                            inputItem.stack -= item.Item2;
+                            break;
+                        }
+                    }
+                }
+            }
+            Type mt = this.GetType();
+            if (!allProcesses.ContainsKey(mt)) allProcesses[mt] = setupMachineProcesses();
+            foreach(var p in allProcesses[mt])
+            {
+                if(canChooseProcess(p)){
+                    currentProcess = (TagCompound) p.Clone();
                     if(OnMachineStart!= null)
                     {
                         OnMachineStart(this);
@@ -240,35 +276,30 @@ namespace Factorized.Machines{
                         OnStartEvent(this);
                     }
                     OnStart();
-                    Start(Process);
+                    removeItems(currentProcess.Get<List<(int,int)>>("consumed"));
                     break;
-
                 }
             }
         }
 
-        private void Start(MachineProcess Process)
+        public virtual bool canChooseProcess(TagCompound p)
         {
-            foreach(var item in Process.Consume)
-            {
-                foreach(var slot in Slots)
-                {
-                    if(slot.IType ==item.type)
-                    {
-                        slot.SlotItem.stack -= item.stack;
-                        if(slot.stack <= 0)
-                        {
-                            slot.SlotItem = new Item();
-                        }
-                        break;
-                    }
+            bool hi = true;
+            // int,int means type,quantity
+            foreach (var recipeItem in (List<(int,int)>)p["consumed"]) {
+                int found = 0;
+                foreach (var itemSlot in inputSlots) {
+                    var item = itemSlot.item;
+                    if (item.type == recipeItem.Item1) found += item.stack;
                 }
+                if (found < recipeItem.Item2) return false;
             }
+            return hi;
         }
 
         protected void _Progress()
         {
-            if(!CanProgress())return;
+            if(!CanProgress()) return;
             timer++;
             if(OnMachineProgress!= null){
                 OnMachineProgress(this);
@@ -282,9 +313,8 @@ namespace Factorized.Machines{
 
         protected void _Finish()
         {
-            if(!CanFinish(Process)) return;
-            timer = 0;
-            Finish(Process);
+            if(!CanFinish()) return;
+            Finish();
             if(OnMachineFinish != null)
             {
                 OnMachineFinish(this);
@@ -294,230 +324,77 @@ namespace Factorized.Machines{
                 OnFinishEvent(this);
             }
             OnFinish();
-            Process = null;
-        }
-        protected void Finish(MachineProcess Process)
-        {
-            List<Item> noCopies = new ();
-            foreach(var item in Process.Produce)
-            {
-                Item p = item.Clone();
-                List<MachineSlot> output = GetSlots(MachineSlotType.Output);
-                for(int i =0; i< output.Count; i++){
-                    MachineSlot slot = output[i];
-                    if(slot.IType == p.type){
-                        if(slot.stack + p.stack <= slot.maxStack )
-                        {
-                            slot.SlotItem.stack += p.stack;
-                            p.stack = 0;
-                        }
-                        else
-                        {
-                            p.stack = p.stack + slot.stack - slot.maxStack;
-                            slot.SlotItem.stack = slot.maxStack;
-                        }
-                    }
-                }
-                if(p.stack > 0)
-                {
-                    noCopies.Add(p);
-                }
-            }
-            foreach (var item in noCopies)
-            {
-                for(int i = 0; i< GetSlots(MachineSlotType.Output).Count();i++)
-                {
-                    if(GetSlots(MachineSlotType.Output)[i].IsAir)
-                    {
-                        GetSlots(MachineSlotType.Output)[i].SlotItem = item;
-                        break;
-                    }
-                }
-            }
-        }
-        protected virtual bool CanFinish(MachineProcess Process){
-            List<Item> toFit = Process.Produce;
-            List<MachineSlot> Fitted;
-            List<MachineSlot> copy = GetSlots(MachineSlotType.Output);
-            foreach(var i in toFit)
-            {
-                Fitted = copy;
-                Item tf = i.Clone();
-                foreach(var slot in Fitted)
-                {
-                    if(slot.IType == tf.type)
-                    {
-                        if(slot.stack + tf.stack <= slot.maxStack)
-                        {
-                            tf.stack = 0;
-                            break;
-                        }
-                        else
-                        {
-                            tf.stack += slot.stack - slot.maxStack;
-                            continue;
-                        }
-                    }
-                    if(slot.IsAir){ 
-                        tf.stack = 0;
-                        break;
-                    }
-                    copy.Add(slot);
-                }
-                if(tf.stack > 0)return false;
-            }
-            return true;
+            currentProcess = null;
+            timer = 0;
         }
 
-        protected virtual bool ValidateProcess(MachineProcess process)
-        {
-            return hasItems(process);
-        }
-        protected bool hasItems(MachineProcess Process)
-        {
-            bool hasItems = true;
-            foreach (var item in Process.Consume)
-            {
-                hasItems = hasItems && Slots.Exists(slot => slot.IType == item.type && slot.stack >= item.stack);
+        protected bool CanFinish() {
+            bool hasSpace = true;
+            // int int means type, quantity
+            foreach (var pItem in currentProcess.Get<List<(int,int)>>("produced")) {
+                int stillNeeds = pItem.Item2;
+                foreach (var oItemSlot in outputSlots){
+                    var oItem = oItemSlot.item;
+                    stillNeeds = oItem switch {
+                        var x when x.type == pItem.Item1 => x.maxStack < x.stack + stillNeeds 
+                          ? stillNeeds - x.maxStack + x.stack : 0,
+                        _ => stillNeeds,
+                    };
+                }
+                if (stillNeeds > 0) return false;
             }
-            return hasItems;
+            return hasSpace;
+        }
+
+
+        protected void Finish()
+        {
+            /// precondition: it has enough space if it doesn't it will discard some Items
+            void addItems(List<(int,int)> pItems) 
+            {
+                foreach(var pItem in pItems) {
+                    int stillHas = pItem.Item2;
+                    for( int i =0; i< outputSlots.Count(); i++) {
+                        if (stillHas <= 0) break;
+                        if (outputSlots[i].type == pItem.Item1){
+                          if (stillHas + outputSlots[i].stack <= outputSlots[i].maxStack) 
+                          {
+                            stillHas = 0;
+                            outputSlots[i].stack += stillHas;
+                          } else {
+                            stillHas = stillHas - outputSlots[i].maxStack + outputSlots[i].stack;
+                            outputSlots[i].stack = outputSlots[i].maxStack;
+                          }
+                        }
+                        if (outputSlots[i].IsAir) {
+                          outputSlots[i].item = new Item (pItem.Item1,pItem.Item2);
+                        }
+                    }
+                }
+            }
+            addItems(currentProcess.Get<List<(int,int)>>("produce"));
+            timer = 0;
+            currentProcess = null;
         }
         
-        public List<MachineSlot> GetSlots(MachineSlotType type)
-        {
-            List<MachineSlot> r = new ();
-            foreach (var entry in Slots)
-            {
-                if(entry.Type == type) r.Add(entry);
-            }
-            return r;
+        public virtual IEnumerable<Item> GetItems() {
+            return from slot in inputSlots.Concat(outputSlots)
+              select slot.item;
         }
-        public List<MachineSlot> GetSlots()
+        public ItemReferrer InputSlotRef(int i) 
         {
-            return Slots;
+            return inputSlots[i].itemRef();
         }
-
-        public bool TryAddItemToSlot(MachineSlotType slotType, int slotNumber,Item myItem)
+        public ItemReferrer OutputSlotRef(int i)
         {
-            List<MachineSlot> slots = GetSlots(slotType);
-            if(slotNumber >= 0 && slotNumber< slots.Count())
-            {
-                if(slots[slotNumber].IsAir)
-                {
-                    slots[slotNumber].SlotItem = myItem;
-                    return true;
-                }
-            }
-            return false;
-        }
-        public Factorized.ItemReferrer InputSlotRef(int i) 
-        {
-            return GetSlots(MachineSlotType.Input)[i].GetRef();
-        }
-        public Factorized.ItemReferrer OutputSlotRef(int i)
-        {
-            return GetSlots(MachineSlotType.Output)[i].GetRef();
-        }
-        public List<Item> GetItems()
-        {
-            IEnumerable<Item> list = from s in Slots
-                                select s.SlotItem;
-            return list.ToList();
-        }
-        public List<Item>GetItems(MachineSlotType type)
-        {
-            List<Item> list = (List<Item>)from s in GetSlots(type)
-                              select s.SlotItem;
-            return list;
+            return outputSlots[i].itemRef();
         }
 
-        public void TryAddItemToSlot(int slotNumber, Item myItem)
+        public virtual void GenerateUI(UIState UI)
         {
-            MachineSlot slot = Slots[slotNumber];
-            if(slot.IType == myItem.type|| myItem.IsAir || slot.IsAir)
-            {
-                slot.SlotItem = myItem;
-            }
-        }
-        public virtual void GenerateUI(MachineUI UI)
-        {
-            UIPanel inputPanel = new ();
-            inputPanel.Width.Set(300,0f);
-            inputPanel.Height.Set(150,0f);
-            inputPanel.VAlign = 0.39f;
-            inputPanel.HAlign = 0.1f;
-
-            GenerateSlotGroup(inputPanel,MachineSlotType.Input,ItemSlot.Context.InventoryItem);
-            UI.Append(inputPanel);
-
-            UIPanel outputPanel = new ();
-            outputPanel = new UIPanel();
-            outputPanel.Width.Set(300,0);
-            outputPanel.Height.Set(150,0);
-            outputPanel.HAlign = 0.1f;
-            outputPanel.VAlign = 0.88f;
-            GenerateSlotGroup(outputPanel,MachineSlotType.Output,ItemSlot.Context.ChestItem);
-            UI.Append(outputPanel);
-
-            UIPanel processingPanel = new ();
-            processingPanel = new UIPanel();
-            processingPanel.Width.Set(150,0f);
-            processingPanel.Height.Set(200,0f);
-            processingPanel.HAlign = 0.2f;
-            processingPanel.VAlign = 0.65f;
-
-            FProgressBar progress = new FProgressBar (UI.fullFire,UI.emptyFire,GetTimerUpdated(),GetLimitUpdated());
-            progress.Width.Set(50,0f);
-            progress.Height.Set(50,0f);
-            progress.VAlign = 0.5f;
-            progress.HAlign = 0.5f;
-            processingPanel.Append(progress);
-            UI.Append(processingPanel);
+            
         }
 
-        public void GenerateSlotGroup(UIPanel inputPanel, MachineSlotType type, int context)
-        {
-            List<MachineSlot> machineSlots = GetSlots(type);
-            for(int i = 0; i < machineSlots.Count; i++)
-            {
-                float padding = 10f;
-                float sizeWithPadding = 50f;
-                int rowFit = (int)(inputPanel.Width.Pixels / sizeWithPadding);
-                int colunmFit = (int)(inputPanel.Height.Pixels/ sizeWithPadding);
-                if(rowFit * colunmFit < machineSlots.Count)
-                {
-                    Factorized.mod.Logger.Warn("Created Machine UI with missing elements as they couldn't fit");
-                }
-                float hStart = padding/inputPanel.Width.Pixels;
-                float vStart = padding/inputPanel.Height.Pixels;
-                float hStep = sizeWithPadding/inputPanel.Width.Pixels;
-                float vStep = sizeWithPadding/inputPanel.Height.Pixels;
-                int colunm = i / rowFit;
-                int row = i % rowFit;
-                MIS slot =  new (i,type ,context);
-                slot.Height.Set(sizeWithPadding - 2*padding,0f);
-                slot.Width.Set(sizeWithPadding - 2*padding,0f);
-                slot.HAlign = hStart + row * hStep;
-                slot.VAlign = vStart + colunm * vStep;
-                inputPanel.Append(slot);
-            }
-        }
-        public Func<MachineSlot> GetSlotUpdated(int i, MachineSlotType type)
-        {
-            return () => {
-                TileEntity test;
-                TileEntity.ByPosition.TryGetValue(Position,out test);
-                if(test == null) return new(MachineSlotType.Input);
-                if(test is MachineTE)
-                {
-                    MachineTE newTE = (MachineTE)test;
-                    return newTE.GetSlots(type)[i];
-                }else
-                {
-                    return GetSlots(type)[i];
-                }
-            };
-        }
         public Func<int> GetTimerUpdated()
         {
             return () => 
@@ -526,7 +403,7 @@ namespace Factorized.Machines{
                 TileEntity.ByPosition.TryGetValue(Position, out newTE);
                 if(newTE == null) return 0;
                 if(!(newTE is MachineTE)) return 0;
-                if(((MachineTE)newTE).Process == null)return 0;
+                if(((MachineTE)newTE).currentProcess == null) return 0;
                 else {
                  return ((MachineTE)newTE).timer;
                 }
@@ -541,8 +418,8 @@ namespace Factorized.Machines{
                 if(newTE == null) return 1;
                 if(!(newTE is MachineTE)) return 1;
                 MachineTE m = (MachineTE)newTE;
-                if(m.Process == null) return 1;
-                else return m.Process.ProcessingTime;
+                if(m.currentProcess == null) return 1;
+                else return (int)m.currentProcess["duration"];
             };
         }
         public static MachineTE Get(int id)
@@ -563,4 +440,5 @@ namespace Factorized.Machines{
         }
         
     }
+
 }

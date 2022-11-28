@@ -6,11 +6,9 @@ using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using System;
 using Terraria.ID;
-using Factorized.Net.Client;
-using Factorized.Net.Server;
 using Factorized.Utility;
 using Terraria.DataStructures;
-
+/*
 namespace Factorized.UI.Elements {
     public class MIS : UIElement
     {
@@ -217,4 +215,4 @@ namespace Factorized.UI.Elements {
             }
         }
     }
-}
+}*/

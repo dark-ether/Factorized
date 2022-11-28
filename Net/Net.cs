@@ -121,7 +121,7 @@ namespace Factorized.Net {
                 list.Add(reader.ReadString());
             }
             return list;
-        }
+        }/*
         public static MachineSlot ReadMachineSlot(this BinaryReader reader)
         {
             MachineSlot r = new ((MachineSlotType)reader.ReadInt32());
@@ -184,7 +184,7 @@ namespace Factorized.Net {
                 r.Properties = new ();
             }
             return r;
-        }
+        }*/
         public static void Write(this BinaryWriter writer, List<Item> inp)
         {
             writer.Write(inp.Count());
