@@ -378,7 +378,7 @@ namespace Factorized.Machines{
         }
         
         public virtual IEnumerable<Item> GetItems() {
-            return from slot in inputSlots.Concat(outputSlots)
+            return from slot in inputSlots.ToList().Concat(outputSlots.ToList())
               select slot.item;
         }
         public ItemReferrer InputSlotRef(int i) 

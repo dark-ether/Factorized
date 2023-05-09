@@ -7,7 +7,7 @@ namespace Factorized.Runes
     {
         public override void SetStaticDefaults()
         {
-            Tooltip.SetDefault("TODO:ADD suitable description");
+            // Tooltip.SetDefault("TODO:ADD suitable description");
         }
 
         public override void SetDefaults()

@@ -6,7 +6,7 @@ namespace Factorized.Rebalance
 {
     public class BalancedPlayer : ModPlayer
     {
-        public override void OnEnterWorld(Player player)
+        public override void OnEnterWorld()
         {
             if(Player.statLifeMax< 200) Player.statLifeMax = 200;
         }

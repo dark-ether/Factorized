@@ -10,8 +10,8 @@ namespace Factorized.Machines.Processing.HeavyFurnace
         public override string Texture => "Factorized/Machines/Processing/HeavyFurnace/HeavyFurnace";
 		    public override void SetStaticDefaults()
 		    {
-			      DisplayName.SetDefault("Heavy Furnace"); // By default, capitalization in classnames will add spaces to the display name. You can customize the display name here by uncommenting this line.
-			      Tooltip.SetDefault("A Furnace that consumes Fuel to generate Bars at a more efficient rate");
+			      // DisplayName.SetDefault("Heavy Furnace"); // By default, capitalization in classnames will add spaces to the display name. You can customize the display name here by uncommenting this line.
+			      // Tooltip.SetDefault("A Furnace that consumes Fuel to generate Bars at a more efficient rate");
 		    }
 
 		    public override void SetDefaults()

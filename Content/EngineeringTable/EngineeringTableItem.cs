@@ -21,7 +21,7 @@ namespace Factorized.Content.EngineeringTable
         }
         public override void SetStaticDefaults()
         {
-            DisplayName.SetDefault("Engineering Table"); 
+            // DisplayName.SetDefault("Engineering Table"); 
         }
         public override void AddRecipes()
         {
