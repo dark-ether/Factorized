@@ -9,11 +9,6 @@ namespace Factorized.Machines.Processing.Furnace
     {
         public override string Texture => "Factorized/Machines/Processing/Furnace/Furnace";
 
-        public override int getItemType()
-        {
-            return ModContent.ItemType<FurnaceItem>();
-        }
-
         public override MachineTE getTileEntity()
         {
             return ModContent.GetInstance<FurnaceTE>();

@@ -35,11 +35,6 @@ namespace Factorized.Machines{
             TileObjectData.addTile(Type);
         }
         /* 
-        public override bool CanKillTile(int i,int j,ref bool blockDamaged)
-        {
-            return !(getTileEntityInLocation(i,j) ==null) && !getTileEntityInLocation(i,j).hasItems() 
-                && !getTileEntityInLocation(i,j).machineState.IsProcessing();
-        }
         */
         public virtual MachineTE getTileEntityInLocation(int i ,int j)
         {
@@ -97,23 +92,6 @@ namespace Factorized.Machines{
             }
             return false;
         }
-
-        public override void KillMultiTile(int i, int j ,int FrameX , int FrameY)
-        {
-            Point16 tileOrigin = TileUtils.GetTileOrigin(i,j);
-            Item.NewItem(new EntitySource_TileBreak(i, j),i * 16 , j * 16,48,32,getItemType());
-            MachineTE dead = getTileEntityInLocation(i,j);
-            foreach(var item in dead.GetItems())
-            {
-                if(!item.IsAir)
-                {
-                    //TODO: switch to the new newItem overload which takes an item
-                    Item.NewItem(new EntitySource_TileBreak(i,j),i*16,j*16,48,32,item.type,item.stack);
-                }
-            }
-
-        }
         public abstract MachineTE getTileEntity();
-        public abstract int getItemType();
     }
 }
