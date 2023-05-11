@@ -1,1 +1,1 @@
-Factorized is a mod which allows automation of farms.
+Factorized is a mod.
