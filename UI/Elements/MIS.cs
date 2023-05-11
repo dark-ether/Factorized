@@ -83,10 +83,10 @@ namespace Factorized.UI.Elements {
                     case < 90:
                         threshold = 8;
                         break;
-                    case < 120: 
+                    case < 120:
                         threshold = 4;
                         break;
-                    default: 
+                    default:
                         threshold =1;
                         break;
                 }
@@ -113,10 +113,10 @@ namespace Factorized.UI.Elements {
                     case < 90:
                         threshold = 8;
                         break;
-                    case < 120: 
+                    case < 120:
                         threshold = 4;
                         break;
-                    default: 
+                    default:
                         threshold = 1;
                         break;
                 }
@@ -130,7 +130,7 @@ namespace Factorized.UI.Elements {
                     RTimer++;
                 }
             }
-            
+
         }
 
         public override void MouseDown(UIMouseEvent evt)
@@ -154,7 +154,7 @@ namespace Factorized.UI.Elements {
         public override void Click(UIMouseEvent evt)
         {
             base.Click(evt);
-            
+
             switch(FindClickOperation())
             {
                 case CO.Swap:
@@ -181,14 +181,14 @@ namespace Factorized.UI.Elements {
             else
             {
                 if(getSlot().IsAir) return CO.Deposit;
-                else if(getSlot().IType == Main.mouseItem.type 
+                else if(getSlot().IType == Main.mouseItem.type
                     && getSlot().stack + Main.mouseItem.stack <= getSlot().maxStack) return CO.Deposit;
                 else return CO.Swap;
             }
         }
         private bool canPickupIntoMouse()
         {
-            return (Main.mouseItem.IsAir || (Main.mouseItem.type == getSlot().IType 
+            return (Main.mouseItem.IsAir || (Main.mouseItem.type == getSlot().IType
                 && Main.mouseItem.stack + getSlot().stack <= Main.mouseItem.maxStack))
                 && !getSlot().IsAir;
         }

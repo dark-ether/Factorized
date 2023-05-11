@@ -109,12 +109,12 @@ namespace Factorized.Net.Server
                 case RequestType.Swap:
                     return slotItem.stack > 0 && mouseItem.stack > 0 && mouseItem.type != slotItem.type;
                 case RequestType.Deposit:
-                    return mouseItem.stack > 0; 
+                    return mouseItem.stack > 0;
                 case RequestType.PickupAllIntoMouse:
                     return slotItem.stack > 0;
                 case RequestType.PickupIntoMouse:
                     return slotItem.stack > 0;
-                default: 
+                default:
                     return false;
             }
         }
@@ -133,7 +133,7 @@ namespace Factorized.Net.Server
             if(inv == null || inv.Length< 58) return;
             switch(request)
             {
-                case RequestType.Swap: 
+                case RequestType.Swap:
                     SLOT.SlotItem = mouseItem;
                     break;
                 case RequestType.Deposit:

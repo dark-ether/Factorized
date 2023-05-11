@@ -16,31 +16,25 @@ using System;
 
 namespace Factorized.UI {
 
-    public class MachineUI : UIState
-    {
+  public class MachineUI : UIState
+  {
 
-        public Point16 MP;
-        public MachineUI(){}
-        public MachineUI(Point16 pos){
-            MP = pos;
-        }
-        public override void OnActivate()
-        {
-            var machine = MachineTE.Get(MP);
-            if (machine == null) return;
-            machine?.GenerateUI(this);
-        }
-
-
-        public override void OnDeactivate()
-        {
-            base.OnDeactivate();
-            this.RemoveAllChildren();
-        }
-
-        public override void OnInitialize()
-        {
-            
-        }
+    public Point16 MP;
+    public MachineUI() {}
+    public MachineUI(Point16 pos) {
+      MP = pos;
     }
+    public override void OnActivate()
+    {
+      var machine = MachineTE.Get(MP);
+      if (machine == null) return;
+      machine?.GenerateUI(this);
+    }
+
+    public override void OnDeactivate()
+    {
+      base.OnDeactivate();
+      this.RemoveAllChildren();
+    }
+  }
 }

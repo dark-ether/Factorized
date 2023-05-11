@@ -4,11 +4,11 @@ using Terraria;
 
 namespace Factorized.Rebalance
 {
-    public class BalancedPlayer : ModPlayer
+  public class BalancedPlayer : ModPlayer
+  {
+    public override void OnEnterWorld()
     {
-        public override void OnEnterWorld()
-        {
-            if(Player.statLifeMax< 200) Player.statLifeMax = 200;
-        }
+      if(Player.statLifeMax< 200) Player.statLifeMax = 200;
     }
+  }
 }

@@ -95,7 +95,7 @@ namespace Factorized.UI.Elements
                                 Main.mouseItem = remove;
                                 Main.LocalPlayer.inventory[58] = Main.mouseItem;
                                 remove = store;
-                            } else 
+                            } else
                             {
                                 Main.mouseItem.stack += remove.stack - remove.maxStack;
                                 remove.stack = remove.maxStack;
@@ -146,10 +146,10 @@ namespace Factorized.UI.Elements
                         Main.LocalPlayer.inventory[58] = Main.mouseItem;
                     }
                 }
-            } 
+            }
             RaisePITEvent();
         }
-        
+
         public override void RightMouseDown(UIMouseEvent evt)
         {
             base.RightMouseDown(evt);
@@ -179,10 +179,10 @@ namespace Factorized.UI.Elements
                     case < 2*60:
                     timerThreshold = 15;
                     break;
-                    case < 4*60: 
+                    case < 4*60:
                     timerThreshold = 5;
                     break;
-                    default: 
+                    default:
                     timerThreshold = 1;
                     break;
                 }

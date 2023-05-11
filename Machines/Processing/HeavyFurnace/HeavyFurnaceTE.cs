@@ -12,18 +12,18 @@ using Factorized.Machines;
 
 namespace Factorized.Machines.Processing.HeavyFurnace
 {
-    public class HeavyFurnaceTE : MachineTE
+  public class HeavyFurnaceTE : MachineTE
+  {
+    public override int ValidTile => ModContent.TileType<HeavyFurnaceTile>();
+
+    public override int inputSlotsNumber => 2;
+
+    public override int outputSlotsNumber => 2;
+
+    public override List<TagCompound> setupMachineProcesses()
     {
-        public override int ValidTile => ModContent.TileType<HeavyFurnaceTile>();
-
-        public override int inputSlotsNumber => 2;
-
-        public override int outputSlotsNumber => 2;
-
-        public override List<TagCompound> setupMachineProcesses()
-        {
-            //TODO implement recipes;
-           return new(); 
-        }
+      //TODO implement recipes;
+      return new();
     }
+  }
 }

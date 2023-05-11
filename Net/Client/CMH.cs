@@ -52,7 +52,7 @@ namespace Factorized.Net.Client {
 
         }
         public static void UpdateItems()
-        { 
+        {
             var m = MachineTE.Get(pos);
             var slot = m.GetSlots(type)[CMH.slot];
             var mi = Main.mouseItem;
@@ -75,7 +75,7 @@ namespace Factorized.Net.Client {
                         Main.mouseItem = slot.SlotItem;
                         Main.LocalPlayer.inventory[58]= slot.SlotItem;
                     }
-                    else 
+                    else
                     {
                         Main.mouseItem.stack += slot.stack;
                         Main.LocalPlayer.inventory[58].stack += slot.stack;
@@ -93,7 +93,7 @@ namespace Factorized.Net.Client {
                     else
                     {
                         Main.mouseItem.stack += 1;
-                        Main.LocalPlayer.inventory[58].stack += 1; 
+                        Main.LocalPlayer.inventory[58].stack += 1;
                     }
                     slot.SlotItem.stack -=1;
                     if(slot.stack <=0 )
