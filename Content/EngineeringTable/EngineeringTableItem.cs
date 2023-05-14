@@ -10,18 +10,17 @@ namespace Factorized.Content.EngineeringTable
     public override void SetDefaults()
     {
       Item.createTile = ModContent.TileType<Content.EngineeringTable.EngineeringTableTile>();
-      Item.maxStack = 999;
+      Item.maxStack = 9999;
       Item.value = 200;
       Item.useAnimation = 15;
       Item.useTime = 15;
       Item.consumable = true;
       Item.useStyle = ItemUseStyleID.Swing;
-      Item.rare = 0;
+      Item.rare = ItemRarityID.White;
       Item.autoReuse = true;
     }
     public override void SetStaticDefaults()
     {
-      // DisplayName.SetDefault("Engineering Table");
     }
     public override void AddRecipes()
     {

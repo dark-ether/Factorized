@@ -79,7 +79,7 @@ namespace Factorized.Utility
              select field;
     }
     public static void TransferItPF<T1,T2>(this T1 src,T2 dst) {
-      var fields = dst.GetType().GetFieldsIwA<PersistentAttribute>();
+      var fields = dst.GetType().GetFieldsIwA<MachineDataAttribute>();
     }
     public static IEnumerable<T2> LiftE<T1,T2>(this IEnumerable<T1> col, Func<T1,T2> lifted)
     {

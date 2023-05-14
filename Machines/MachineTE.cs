@@ -20,7 +20,7 @@ using ReLogic.Content;
 
 namespace Factorized.Machines {
   public delegate bool MachineValidation(MachineTE target);
-  public class PersistentAttribute : Attribute
+  public class MachineDataAttribute : Attribute
   {
   }
   public class MachineSlot : TagSerializable {
@@ -95,16 +95,16 @@ namespace Factorized.Machines {
     public event Action<MachineTE> OnProgressEvent;
     public event Action<MachineTE> OnFinishEvent;
     public static Dictionary<Type,List<TagCompound>> allProcesses;
-    [Persistent]
+    [MachineData]
     protected TagCompound currentProcess;
-    [Persistent]
+    [MachineData]
     public int timer {
       get;
       protected set;
     }
-    [Persistent]
+    [MachineData]
     public MachineSlot[] inputSlots;
-    [Persistent]
+    [MachineData]
     public MachineSlot[] outputSlots;
 
     public abstract int ValidTile {
@@ -191,7 +191,7 @@ namespace Factorized.Machines {
 
     public sealed override void LoadData(TagCompound tag)
     {
-      var fields = this.GetType().GetFieldsIwA<PersistentAttribute>();
+      var fields = this.GetType().GetFieldsIwA<MachineDataAttribute>();
       fields
       .OrderBy(field => field.Name)
       .ToList()
@@ -201,7 +201,7 @@ namespace Factorized.Machines {
     }
 
     public sealed override void SaveData(TagCompound tag) {
-      var fields = this.GetType().GetFieldsIwA<PersistentAttribute>();
+      var fields = this.GetType().GetFieldsIwA<MachineDataAttribute>();
       fields
       .OrderBy(field => field.Name)
       .ToList()
@@ -210,7 +210,7 @@ namespace Factorized.Machines {
 
     public sealed override void NetReceive(BinaryReader reader) {
       TagCompound tag = TagIO.Read(reader);
-      var fields = this.GetType().GetFieldsIwA<PersistentAttribute>();
+      var fields = this.GetType().GetFieldsIwA<MachineDataAttribute>();
       fields
       .OrderBy(field => field.Name)
       .ToList()
@@ -218,7 +218,7 @@ namespace Factorized.Machines {
     }
     public sealed override void NetSend(BinaryWriter writer) {
       TagCompound tag = new ();
-      var fields = this.GetType().GetFieldsIwA<PersistentAttribute>();
+      var fields = this.GetType().GetFieldsIwA<MachineDataAttribute>();
       fields
       .OrderBy(field => field.Name)
       .ToList()

@@ -1,0 +1,25 @@
+Mods: {
+	Factorized: {
+		Items: {
+			LesserRuneOfViolence: {
+				// Tooltip: ""
+				// DisplayName: Lesser Rune Of Violence
+			}
+
+			HeavyFurnaceItem: {
+				// Tooltip: ""
+				// DisplayName: Heavy Furnace
+			}
+
+			Furnace: {
+				// Tooltip: ""
+				// DisplayName: Furnace
+			}
+
+			EngineeringTableItem: {
+				// Tooltip: ""
+				// DisplayName: Engineering Table
+			}
+		}
+	}
+}
