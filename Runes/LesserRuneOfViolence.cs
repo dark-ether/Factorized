@@ -3,11 +3,11 @@ using Terraria.ModLoader;
 
 namespace Factorized.Runes
 {
+  // TODO: rework item
   public class LesserRuneOfViolence : ModItem
   {
     public override void SetStaticDefaults()
     {
-      // Tooltip.SetDefault("TODO:ADD suitable description");
     }
 
     public override void SetDefaults()
@@ -16,11 +16,6 @@ namespace Factorized.Runes
       Item.maxStack = 1;
       Item.buyPrice(0,0,0,10);
       Item.accessory = true;
-    }
-    public override void UpdateEquip(Player player)
-    {
-      RunePlayer p = player.GetModPlayer<RunePlayer>();
-      p.LRoV = true;
     }
   }
 }
