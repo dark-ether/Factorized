@@ -1,1 +1,2 @@
 - make MachineTile drop stored Items again
+- discover how to copy documentation from other members

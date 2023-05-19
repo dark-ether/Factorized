@@ -19,7 +19,10 @@ using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 
 namespace Factorized.Machines {
-  public delegate bool MachineValidation(MachineTE target);
+  /// <summary>
+  /// texto
+  /// </summary>
+  [System.AttributeUsage(System.AttributeTargets.Field)]
   public class MachineDataAttribute : Attribute
   {
   }
@@ -59,103 +62,98 @@ namespace Factorized.Machines {
       return t;
     }
   }
-  /// <summary>
-  /// Basic machine type,when inheriting from it,
-  /// mark any field necessary to behave properly with Persistent
-  /// </summary>
+
+  /// <remarks>
+  /// basic machine capable of simulating a process
+  /// </remarks>
   public abstract class MachineTE : ModTileEntity
   {
+    public enum State {Idle, Working, Halted, Frozen};
+    //TODO: what was the zero for?
     public int Height {
-      get {
-        return TileObjectData.GetTileData(ValidTile,0).Height;
-      }
+      get => TileObjectData.GetTileData(ValidTile,0).Height;
     }
     public Point16 MouseRelativePlacePosition {
-      get {
-        return TileObjectData.GetTileData(ValidTile,0).Origin;
-      }
+      get => TileObjectData.GetTileData(ValidTile,0).Origin;
     }
     public int Width {
-      get {
-        return TileObjectData.GetTileData(ValidTile,0).Width;
-      }
+      get => TileObjectData.GetTileData(ValidTile,0).Width;
     }
-
     public static event Action<MachineTE> OnMachinePlace;
-    public static event Action<MachineTE> OnMachineStart;
     public static event Action<MachineTE> OnMachinePreUpdate;
+    public static event Action<MachineTE> OnMachineUpdate;
     public static event Action<MachineTE> OnMachinePostUpdate;
-    public static event Action<MachineTE> OnMachineProgress;
+    public static event Action<MachineTE> OnMachineCounterReset;
+    public static event Action<MachineTE> OnMachineStart;
+    public static event Action<MachineTE> OnMachineWorking;
     public static event Action<MachineTE> OnMachineFinish;
+    public static event Action<MachineTE> OnMachineHalt;
+    public static event Action<MachineTE> OnMachineRestart;
 
     public event Action<MachineTE> OnPlaceEvent;
-    public event Action<MachineTE> OnStartEvent;
     public event Action<MachineTE> OnPreUpdateEvent;
+    public event Action<MachineTE> OnUpdateEvent;
     public event Action<MachineTE> OnPostUpdateEvent;
-    public event Action<MachineTE> OnProgressEvent;
+    public event Action<MachineTE> OnCounterResetEvent;
+    public event Action<MachineTE> OnStartEvent;
+    public event Action<MachineTE> OnWorkingEvent;
     public event Action<MachineTE> OnFinishEvent;
-    public static Dictionary<Type,List<TagCompound>> allProcesses;
-    [MachineData]
-    protected TagCompound currentProcess;
-    [MachineData]
-    public int timer {
-      get;
-      protected set;
-    }
-    [MachineData]
-    public MachineSlot[] inputSlots;
-    [MachineData]
-    public MachineSlot[] outputSlots;
+    public event Action<MachineTE> OnHaltEvent;
+    public event Action<MachineTE> OnRestartEvent;
 
+    /// <remarks>
+    /// you should call ModContent.Tiletype here and do nothing else
+    /// </remarks>
     public abstract int ValidTile {
       get;
     }
-    public abstract List<TagCompound> setupMachineProcesses();
-    public abstract int inputSlotsNumber {
-      get;
-    }
-    public abstract int outputSlotsNumber {
-      get;
-    }
-    protected virtual void OnPlace() {}
-    protected virtual void OnStart() {}
-    protected virtual void OnPreUpdate() {}
-    protected virtual void OnPostUpdate() {}
-    protected virtual void OnProgress() {}
-    protected virtual bool CanProgress() {
-      return true;
-    }
-    protected virtual void OnFinish() {}
+    /// <remarks>
+    /// a simple counter which increases each time the machine updates while working
+    /// DOES NOT reset On Finish.
+    /// </remarks>
+    [field: MachineData]
+    public int counter {get; private set;} = 0;
+    /// <remarks>
+    /// current State of the machine is used in the update method to control 
+    /// whether the machine is working and if so apply the corresponding logic
+    /// </remarks>
+    [field: MachineData]
+    public State state {get; private set;} = State.Idle;
+    /// <remarks>
+    /// stores the previous state for unfreezing correctly
+    /// </remarks>
+    [field: MachineData]
+    private State prev {get; set;} = State.Idle;
+
+    protected virtual void OnPlace(){}
+    protected virtual void OnPreUpdate(){}
+    protected virtual void OnUpdate(){}
+    protected virtual void OnPostUpdate(){}
+    protected virtual void OnCounterReset(){}
+    protected virtual void OnStart(){}
+    protected virtual void OnWorking(){}
+    protected virtual void OnFinish(){}
+    protected virtual void OnHalt(){}
+    protected virtual void OnRestart(){}
+
+
+    protected virtual bool Start() => true;
+    protected virtual bool Work() => true;
+    protected virtual bool Finish() => true;
+    protected virtual bool Restart() => true;
 
     public MachineTE()
     {
-      inputSlots = new MachineSlot[inputSlotsNumber];
-      for (int i = 0; i < inputSlots.Length; i++)
-      {
-        inputSlots[i] = new ();
-      }
-      outputSlots = new MachineSlot [outputSlotsNumber];
-      for (int i = 0; i < outputSlots.Length; i++)
-      {
-        inputSlots[i] = new ();
-      }
     }
 
     protected void _Place()
     {
-      if(OnMachinePlace != null)
-      {
-        OnMachinePlace(this);
-      }
-      if(OnPlaceEvent != null)
-      {
-        OnPlaceEvent(this);
-      }
+      if(OnMachinePlace != null) OnMachinePlace(this);
+      if(OnPlaceEvent != null) OnPlaceEvent(this);
       OnPlace();
     }
 
     public sealed override int Hook_AfterPlacement(int i, int j, int type, int style, int direction, int alternate) {
-
       if(Main.netMode == NetmodeID.MultiplayerClient) {
         int height = Height;
         int width = Width;
@@ -178,293 +176,203 @@ namespace Factorized.Machines {
         if(tileInPosition.TileType == ValidTile) {
           return true;
         }
-      } catch(IndexOutOfRangeException) {
-        ModContent.GetInstance<Factorized>().Logger.Warn("tried to access a tile outside the world");
+      } catch(IndexOutOfRangeException e) {
+        ModContent.GetInstance<Factorized>().Logger.WarnFormat("tried to access a tile outside the world {0}",e.StackTrace);
         return false;
       }
       return false;
     }
 
-    public override void Load() {
-      allProcesses = new ();
+    public sealed override void Load() {
+      //TODO: why?
     }
 
     public sealed override void LoadData(TagCompound tag)
     {
-      var fields = this.GetType().GetFieldsIwA<MachineDataAttribute>();
-      fields
-      .OrderBy(field => field.Name)
-      .ToList()
-      .ForEach(field => {
-        if (tag.ContainsKey(field.Name)) field.SetValue(this,tag[field.Name]);
-      });
+      this
+        .GetType()
+        .GetFieldsIwA<MachineDataAttribute>()
+        .OrderBy(field => field.Name)
+        .ToList()
+        .ForEach(field => {
+          if (tag.ContainsKey(field.Name)) field.SetValue(this,tag[field.Name]);
+        });
     }
-
     public sealed override void SaveData(TagCompound tag) {
-      var fields = this.GetType().GetFieldsIwA<MachineDataAttribute>();
-      fields
-      .OrderBy(field => field.Name)
-      .ToList()
-      .ForEach(field => tag[field.Name] = field.GetValue(this));
+      this
+        .GetType()
+        .GetFieldsIwA<MachineDataAttribute>()
+        .OrderBy(field => field.Name)
+        .ToList()
+        .ForEach(field => tag[field.Name] = field.GetValue(this));
     }
 
+    // TODO: NetReceive Constructs a new Machine?
+    // if so will it be necessary to recreate the UIItemSlots?
     public sealed override void NetReceive(BinaryReader reader) {
       TagCompound tag = TagIO.Read(reader);
-      var fields = this.GetType().GetFieldsIwA<MachineDataAttribute>();
-      fields
-      .OrderBy(field => field.Name)
-      .ToList()
-      .ForEach(field => field.SetValue(this,tag[field.Name]));
+      this
+        .GetType()
+        .GetFieldsIwA<MachineDataAttribute>()
+        .OrderBy(field => field.Name)
+        .ToList()
+        .ForEach(field => field.SetValue(this,tag[field.Name]));
     }
     public sealed override void NetSend(BinaryWriter writer) {
       TagCompound tag = new ();
-      var fields = this.GetType().GetFieldsIwA<MachineDataAttribute>();
-      fields
-      .OrderBy(field => field.Name)
-      .ToList()
-      .ForEach(field => tag[field.Name] = field.GetValue(this));
+      this
+        .GetType()
+        .GetFieldsIwA<MachineDataAttribute>()
+        .OrderBy(field => field.Name)
+        .ToList()
+        .ForEach(field => tag[field.Name] = field.GetValue(this));
       TagIO.Write(tag,writer);
     }
-
-    public override void OnNetPlace() {
+    public sealed override void OnNetPlace() {
       if(Main.netMode == NetmodeID.Server)
-      {
         NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
-      }
     }
 
-    public override sealed void Update() {
-      if(OnMachinePreUpdate != null)
-      {
-        OnMachinePreUpdate(this);
-      }
-      if(OnPreUpdateEvent != null)
-      {
-        OnPreUpdateEvent(this);
-      }
+    public sealed override void Update() {
+      if(OnMachinePreUpdate is not null) OnMachinePreUpdate(this);
+      if(OnPreUpdateEvent is not null) OnPreUpdateEvent(this);
       OnPreUpdate();
-      if(currentProcess == null)
-      {
-        _Start();
-        if(currentProcess != null)
-        {
-          _Progress();
-        }
-      } else
-      {
-        if(currentProcess.GetInt("time") < timer)
-        {
-          _Finish();
-        } else
-        {
-          _Progress();
-        }
-      }
-      if(OnMachinePostUpdate != null)
-      {
-        OnMachinePostUpdate(this);
-      }
-      if(OnPostUpdateEvent != null)
-      {
-        OnPostUpdateEvent(this);
-      }
-      OnPostUpdate();
-      //SMH.UpdateSend(Position);
-      //NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
-    }
-    protected void _Start()
-    {
-      void removeItems(List<(int,int)> toRemove) {
-        foreach (var item in toRemove)
-        {
-          foreach (var inputSlot in inputSlots) {
-            var inputItem = inputSlot.item;
-            if (inputItem.type != item.Item1) continue;
-            if (inputItem.stack <= item.Item2) inputItem.TurnToAir();
-            else {
-              inputItem.stack -= item.Item2;
-              break;
-            }
-          }
-        }
-      }
-      Type mt = this.GetType();
-      if (!allProcesses.ContainsKey(mt)) allProcesses[mt] = setupMachineProcesses();
-      foreach(var p in allProcesses[mt])
-      {
-        if(canChooseProcess(p)) {
-          currentProcess = (TagCompound) p.Clone();
-          if(OnMachineStart!= null)
-          {
-            OnMachineStart(this);
-          }
-          if(OnStartEvent!= null )
-          {
-            OnStartEvent(this);
-          }
+
+      if(OnMachineUpdate is not null) OnMachineUpdate(this);
+      if(OnUpdateEvent is not null) OnUpdateEvent(this);
+      OnUpdate();
+      switch(state){
+        case State.Frozen: break;
+        case State.Idle: 
+        if(Start()){
+          if(OnMachineStart is not null) OnMachineStart(this);
+          if(OnStartEvent is not null) OnStartEvent(this);
           OnStart();
-          removeItems(currentProcess.Get<List<(int,int)>>("consumed"));
-          break;
+          state = State.Working;
         }
-      }
-    }
-
-    public virtual bool canChooseProcess(TagCompound p)
-    {
-      bool hi = true;
-      // int,int means type,quantity
-      foreach (var recipeItem in (List<(int,int)>)p["consumed"]) {
-        int found = 0;
-        foreach (var itemSlot in inputSlots) {
-          var item = itemSlot.item;
-          if (item.type == recipeItem.Item1) found += item.stack;
-        }
-        if (found < recipeItem.Item2) return false;
-      }
-      return hi;
-    }
-
-    protected void _Progress()
-    {
-      if(!CanProgress()) return;
-      timer++;
-      if(OnMachineProgress!= null) {
-        OnMachineProgress(this);
-      }
-      if(OnProgressEvent != null)
-      {
-        OnProgressEvent(this);
-      }
-      OnProgress();
-    }
-
-    protected void _Finish()
-    {
-      if(!CanFinish()) return;
-      Finish();
-      if(OnMachineFinish != null)
-      {
-        OnMachineFinish(this);
-      }
-      if(OnFinishEvent != null)
-      {
-        OnFinishEvent(this);
-      }
-      OnFinish();
-      currentProcess = null;
-      timer = 0;
-    }
-
-    protected bool CanFinish() {
-      bool hasSpace = true;
-      // int int means type, quantity
-      foreach (var pItem in currentProcess.Get<List<(int,int)>>("produced")) {
-        int stillNeeds = pItem.Item2;
-        foreach (var oItemSlot in outputSlots) {
-          var oItem = oItemSlot.item;
-          stillNeeds = oItem switch {
-          var x when x.type == pItem.Item1 => x.maxStack < x.stack + stillNeeds
-          ? stillNeeds - x.maxStack + x.stack : 0,
-          _ => stillNeeds,
-        };
-      }
-      if (stillNeeds > 0) return false;
-      }
-      return hasSpace;
-    }
-
-
-    protected void Finish()
-    {
-      /// precondition: it has enough space if it doesn't it will discard some Items
-      void addItems(List<(int,int)> pItems)
-      {
-        foreach(var pItem in pItems) {
-          int stillHas = pItem.Item2;
-          for( int i =0; i< outputSlots.Count(); i++) {
-            if (stillHas <= 0) break;
-            if (outputSlots[i].type == pItem.Item1) {
-              if (stillHas + outputSlots[i].stack <= outputSlots[i].maxStack)
-              {
-                stillHas = 0;
-                outputSlots[i].stack += stillHas;
-              } else {
-                stillHas = stillHas - outputSlots[i].maxStack + outputSlots[i].stack;
-                outputSlots[i].stack = outputSlots[i].maxStack;
-              }
+        break;
+        case State.Working:
+          if(Work()){
+            if(OnMachineWorking is not null) OnMachineWorking(this);
+            if(OnWorkingEvent is not null) OnWorkingEvent(this);
+            OnWorking();
+            counter++;
+            if(Finish()){
+              if(OnMachineFinish is not null) OnMachineFinish(this);
+              if(OnFinishEvent is not null) OnFinishEvent(this);
+              OnFinish();
+              state = State.Idle;
             }
-            if (outputSlots[i].IsAir) {
-              outputSlots[i].item = new Item (pItem.Item1,pItem.Item2);
-            }
+          } else {
+            if(OnMachineHalt is not null) OnMachineHalt(this);
+            if(OnHaltEvent is not null) OnHaltEvent(this);
+            OnHalt();
+            state = State.Halted;
           }
-        }
+        break;
+        case State.Halted:
+          if(Restart()){
+            if(OnMachineRestart is not null) OnMachineRestart(this);
+            if(OnRestartEvent is not null) OnRestartEvent(this);
+            OnRestart();
+            state = State.Working;
+          }
+        break;
       }
-      addItems(currentProcess.Get<List<(int,int)>>("produce"));
-      timer = 0;
-      currentProcess = null;
+
+      if(OnMachinePostUpdate is not null) OnMachinePostUpdate(this);
+      if(OnPostUpdateEvent is not null) OnPostUpdateEvent(this);
+      OnPostUpdate();
+      // TODO: reimplement code for sending updates to clients
+      // NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
     }
 
-    public virtual IEnumerable<Item> GetItems() {
-      return from slot in inputSlots.ToList().Concat(outputSlots.ToList())
-             select slot.item;
-    }
-    public ItemReferrer InputSlotRef(int i)
-    {
-      return inputSlots[i].itemRef();
-    }
-    public ItemReferrer OutputSlotRef(int i)
-    {
-      return outputSlots[i].itemRef();
-    }
+    /// <summary>
+    /// Sets counter to 0
+    /// </summary>
+    /// <remarks>
+    /// Do not call this method on OnMachineCounterReset, OnCounterResetEvent or OnCounterReset
+    /// </remarks>
+    /// <returns>
+    /// Previous value of counter
+    /// </returns>
+    public int ResetCounter(){
+      var c = counter;
+      if(OnMachineCounterReset is not null) OnMachineCounterReset(this);
+      if(OnCounterResetEvent is not null) OnCounterResetEvent(this);
+      OnCounterReset();
 
-    public virtual void GenerateUI(UIState UI)
-    {
-
+      counter = 0;
+      return c;
     }
-
-    public Func<int> GetTimerUpdated()
+    /// <summary>
+    /// Causes the machine to enter the State.Frozen state
+    /// </summary>
+    /// <remarks>
+    /// This method stores the previous state on a private variable so that 
+    /// when Unfreeze is called it returns to the previous state.
+    ///
+    /// Do note that the machine will still call methods and events 
+    /// from the OnUpdate family while frozen.
+    /// </remarks>
+    public void Freeze() {
+      if(state is State.Frozen) return;
+      prev = state;
+      state = State.Frozen;
+    }
+    /// <summary>
+    /// Unfreezes the machine
+    /// </summary>
+    /// <remarks>
+    /// see <see cref="Freeze">
+    /// </remarks>
+    public void Unfreeze(){if(state is State.Frozen) state = prev;}
+    public Func<int> GetCounterUpdated()
     {
       return () =>
-      {
-        TileEntity newTE;
-        TileEntity.ByPosition.TryGetValue(Position, out newTE);
-        if(newTE == null) return 0;
-        if(!(newTE is MachineTE)) return 0;
-        if(((MachineTE)newTE).currentProcess == null) return 0;
-        else {
-          return ((MachineTE)newTE).timer;
-        }
-      };
+        {
+          var n = Get(Position);
+          return n is null ? 0 : n.counter;
+        };
     }
-    public Func<int> GetLimitUpdated()
-    {
-      return () =>
-      {
-        TileEntity newTE;
-        TileEntity.ByPosition.TryGetValue(Position,out newTE);
-        if(newTE == null) return 1;
-        if(!(newTE is MachineTE)) return 1;
-        MachineTE m = (MachineTE)newTE;
-        if(m.currentProcess == null) return 1;
-        else return (int)m.currentProcess["duration"];
-      };
-    }
+
+    /// <summary>
+    /// Gets a MachineTE by id
+    /// </summary>
+    /// <remarks>
+    /// While perfectly fine in single player each tile entity may have a 
+    /// different id on each client, which may be different than the server's
+    /// id so prefer to call the overload that takes a position
+    /// </remarks>
     public static MachineTE Get(int id)
     {
       TileEntity te;
       TileEntity.ByID.TryGetValue(id,out te);
       if(te == null) return null;
-      if(!(te is MachineTE)) return null;
+      if(te is not MachineTE) return null;
       return (MachineTE) te;
     }
+    /// <summary>
+    /// Gets a MachineTE by position
+    /// </summary>
+    /// <remarks>
+    /// When possible this method should be preferred over the overload that takes id
+    /// </remarks>
     public static MachineTE Get(Point16 pos)
     {
       TileEntity te;
       TileEntity.ByPosition.TryGetValue(pos,out te);
       if(te == null) return null;
-      if(!(te is MachineTE)) return null;
+      if(te is not MachineTE) return null;
       return (MachineTE) te;
     }
+    /// <summary>
+    /// Gets the MachineTE at this machine's current position
+    /// </summary>
+    /// <remarks>
+    ///
+    /// </remarks>
+    public MachineTE Get() => MachineTE.Get(Position);
 
   }
 }

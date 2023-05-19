@@ -22,7 +22,7 @@ namespace Factorized.Machines.Processing.HeavyFurnace
       Item.value = 10000;
       Item.rare = 6;
       Item.autoReuse = true;
-      Item.createTile = ModContent.TileType<Machines.Processing.HeavyFurnace.HeavyFurnaceTile>();
+      //Item.createTile = ModContent.TileType<Machines.Processing.HeavyFurnace.HeavyFurnaceTile>();
       Item.useAnimation = 15;
       Item.useTime = 15;
       Item.consumable = true;

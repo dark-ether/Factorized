@@ -17,7 +17,6 @@ namespace Factorized
     public Dictionary<string,Asset<Texture2D>> asset;
     public override void Load()
     {
-      base.Load();
       ((Factorized)Mod).UI = this;
       if(!Main.dedServ) {
         machineInterface = new UserInterface();//initializes user interface

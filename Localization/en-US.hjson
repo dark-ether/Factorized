@@ -11,14 +11,14 @@ Mods: {
 				DisplayName: Heavy Furnace
 			}
 
-			Furnace: {
-				Tooltip: ""
-				DisplayName: Furnace
-			}
-
 			EngineeringTableItem: {
 				Tooltip: ""
 				DisplayName: Engineering Table
+			}
+
+			FurnaceItem: {
+				DisplayName: Furnace
+				Tooltip: ""
 			}
 		}
 	}

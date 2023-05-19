@@ -28,7 +28,6 @@ namespace Factorized.UI {
     {
       var machine = MachineTE.Get(MP);
       if (machine == null) return;
-      machine?.GenerateUI(this);
     }
 
     public override void OnDeactivate()

@@ -12,7 +12,7 @@ using Factorized.Machines;
 
 namespace Factorized.Machines.Processing.HeavyFurnace
 {
-  public class HeavyFurnaceTE : MachineTE
+  /* public class HeavyFurnaceTE : MachineTE
   {
     public override int ValidTile => ModContent.TileType<HeavyFurnaceTile>();
 
@@ -26,4 +26,5 @@ namespace Factorized.Machines.Processing.HeavyFurnace
       return new();
     }
   }
+  */
 }

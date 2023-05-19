@@ -19,7 +19,6 @@ namespace Factorized.Machines {
       Main.tileBlockLight[Type] = true;
       Main.tileLighted[Type] = true;
       Main.tileFrameImportant[Type] = true;
-      //ItemDrop = ModContent.ItemType<content.items.placeables.melter>();
       TileObjectData.newTile.CopyFrom(TileObjectData.Style2x2);
       TileObjectData.newTile.LavaDeath = false;
       TileObjectData.newTile.WaterDeath = false;
@@ -34,18 +33,8 @@ namespace Factorized.Machines {
       }
       TileObjectData.addTile(Type);
     }
-    /*
-    */
-    public virtual MachineTE getTileEntityInLocation(int i,int j)
-    {
-      if(!TileEntity.ByPosition.ContainsKey(TileUtils.GetTileOrigin(i,j))) return null;
-      MachineTE tileEntity = (MachineTE) TileEntity.ByPosition[TileUtils.GetTileOrigin(i,j)];
-      return tileEntity;
-    }
 
-    public virtual void modifyObjectData()
-    {
-    }
+    public virtual void modifyObjectData(){}
 
     public override bool RightClick(int x, int y)
     {
@@ -82,7 +71,7 @@ namespace Factorized.Machines {
         Main.npcChatCornerItem = 0;
         Main.npcChatText = string.Empty;
       }
-      if(Vector2.Distance(playerPosition,tilePosition)< 5 *16) {
+      if(Vector2.Distance(playerPosition,tilePosition)< 5 * 16) {
         Factorized.Instance.UI.showMachine(TileUtils.GetTileOrigin(x,y));
         return true;
       }
