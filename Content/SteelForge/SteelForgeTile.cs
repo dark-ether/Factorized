@@ -1,17 +1,16 @@
 using Terraria.ModLoader;
 using Factorized.Machines;
-using Terraria;
 using Terraria.ObjectData;
 
-namespace Factorized.Machines.Processing.Furnace
+namespace Factorized.Content.SteelForge
 {
-  public class FurnaceTile : MachineTile
+  public class SteelForgeTile : MachineTile
   {
-    public override string Texture => "Factorized/Machines/Processing/Furnace/Furnace";
+    public override string Texture => "Factorized/Content/SteelForge/SteelForge";
 
     public override MachineTE getTileEntity()
     {
-      return ModContent.GetInstance<FurnaceTE>();
+      return ModContent.GetInstance<SteelForgeTE>();
     }
     public override void modifyObjectData()
     {
