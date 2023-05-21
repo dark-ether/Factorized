@@ -1,31 +1,18 @@
 
 # Overwiew
 
-factorized is a terraria mod that aims to 
+factorized is a terraria mod that aims to be the mod for machines and automation
 
-## Plans
-
-- remove crates so we can add a new mechanic to replace it
+- remove crates so we can add a new mechanic to replace it and automated fishing isn't overpowered
 - each new area needed should have a pylon
 - ore bag
 - herb bag
 - block bag
 - expandable void bag(can add pages)
-- staff for creating block lines
-- staff for filling areas
-- local "events" for each biome
+- item for creating block lines
+- item for filling areas
+- local events for each biome
 - add more cycles for variety only day and night and moon phase is boring 
+after all who doesn't love getting annoyed by the blood moon happening
+in the middle of building something
 
-### Refactor machines
-looking a little more it really is a case of YAGNI
-#### needs
-- create item with chance
-- create multiple items 
-- create items correctly and always
-- consume multiple items
-- items produce a value stored on the machine(ie energy, liquid, etc)
-- some items produce a value on the machine (this can happen while processing)
-- normal machine
-- machine with fuel
-- machine with energy 
-- machine with essence

@@ -68,7 +68,13 @@ namespace Factorized.Machines {
   /// </remarks>
   public abstract class MachineTE : ModTileEntity
   {
-    public enum State {Idle, Working, Halted, Frozen};
+    public enum State : int {Idle, Working, Halted, Frozen};
+    public class StateSerializer : TagSerializer<State, TagCompound>
+    {
+      public override State Deserialize(TagCompound tag) => (State)(tag.Get<int>("state"));
+
+      public override TagCompound Serialize(State value) => new TagCompound {["state"] = (int)value};
+    }    
     //TODO: what was the zero for?
     public int Height {
       get => TileObjectData.GetTileData(ValidTile,0).Height;
@@ -101,7 +107,7 @@ namespace Factorized.Machines {
     public event Action<MachineTE> OnHaltEvent;
     public event Action<MachineTE> OnRestartEvent;
 
-    private static Dictionary<Type,IEnumerable<FieldInfo>> fieldsPerType = new ();
+    internal static MachineSystem system;
     /// <remarks>
     /// you should call ModContent.Tiletype here and do nothing else
     /// </remarks>
@@ -110,7 +116,7 @@ namespace Factorized.Machines {
     }
     /// <remarks>
     /// a simple counter which increases each time the machine updates while working
-    /// DOES NOT reset On Finish.
+    /// DOES NOT reset on finish.
     /// </remarks>
     [field: MachineData]
     public int counter {get; private set;} = 0;
@@ -186,34 +192,11 @@ namespace Factorized.Machines {
     }
     // SECTION: Loading
     public sealed override void Load() {
-      Dictionary<Type,IEnumerable<FieldInfo>> temp = new ();
-      foreach(var m in ModContent.GetContent<MachineTE>()){
-        var mt = m.GetType();
-        Mod.Logger.DebugFormat("Types {0}",m.GetType());
-        temp[mt] = mt.GetFields(BindingFlags.NonPublic | BindingFlags.Public 
-            | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-          .Where(elem => elem.GetCustomAttributes().Any( t => t is MachineDataAttribute));
-      }
-      foreach(var t in temp.Keys) {
-        var mf = temp[t];
-        Type bt = t;
-        while(bt != typeof(ModTileEntity)){
-          bt = bt.BaseType;
-          mf = mf.Concat(temp[bt]);
-        }
-        fieldsPerType[t] = mf;
-      }
-
-
-
-    }
-    public sealed override void Unload(){
-      fieldsPerType = null;
     }
 
     public IEnumerable<FieldInfo> GetMachineDataFields(){
       IEnumerable<FieldInfo> fields;
-      if(fieldsPerType.TryGetValue(GetType(),out fields)) return fields;
+      if(system.fieldsPerType.TryGetValue(GetType(),out fields)) return fields;
       Mod.Logger.ErrorFormat("Type {0} has no cached field info",GetType());
       return new List<FieldInfo>();
     }
@@ -226,7 +209,8 @@ namespace Factorized.Machines {
         .OrderBy(field => field.Name)
         .ToList()
         .ForEach(field => {
-          if (tag.ContainsKey(field.Name)) field.SetValue(this,tag[field.Name]);
+          if (tag.ContainsKey(field.Name))
+              field.SetValue(this,tag[field.Name]);
         });
     }
     public sealed override void SaveData(TagCompound tag) {

@@ -20,13 +20,15 @@ namespace Factorized.Utility
     }
     public static string ToLoggable<T>(this T obj)
     {
-      return ToLoggableHelper<T>(obj, new List<Object>());
+      return ToLoggableHelper<T>(obj, new List<Object>(), 0);
     }
-    private static string ToLoggableHelper<T>(T obj, List<Object> visited)
+    private static string ToLoggableHelper<T>(T obj, List<Object> visited,int indent)
     {
-      if (obj == null) {
-        return "null";
-      }
+      if (obj.IsLoggable()) return obj.ToString();
+      if (obj is null) return "null";
+      string ii = "";
+      for(int i = 0; i < indent; i++) ii += " ";
+      string endl = "\n" + ii;
       var copies = visited.Count();
       var s = "";
       switch (obj)
@@ -34,35 +36,43 @@ namespace Factorized.Utility
       case IEnumerable<T> l:
         var lal = l.ToArray();
         for (int j = 0; j < l.Count(); j++) {
-          s += "element " + j + ": " + ToLoggableHelper(lal[j],visited);
+          s += endl + "  element " + j + ": " + ToLoggableHelper(lal[j] , visited, indent + 2);
         }
-        s = "[" + s + "]";
+        s = "[" + s + endl +"]";
         break;
       case IEnumerable l:
         var i = 0;
         foreach (var el in l) {
-          s += "element " + i + ": " + ToLoggableHelper(el,visited);
+          s += endl + "  element " + i + ": " + ToLoggableHelper(el, visited, indent + 2);
           i++;
         }
-        s = "[" + s + "]";
+        s = "[" + s + endl + "]";
         break;
       default:
         var fields = obj.GetType().GetFields(BindingFlags.NonPublic
-                                             | BindingFlags.Public | BindingFlags.Instance);
+          | BindingFlags.Public | BindingFlags.Instance);
+        s += "{" + endl;
         foreach (var field in fields)
         {
           Object fv = field.GetValue(obj);
+          if (fv is null) s += field.Name + ": null" + endl;
+          if (fv.IsLoggable()){
+            s += field.Name +": "+ fv.ToString() + endl; 
+            continue;
+          } 
           string fvts = "";
           if (visited.Contains(fv)) {
-            fvts = "%% revisited element " + visited.IndexOf(fv) + " %%";
+            fvts += "%% revisited #" + visited.IndexOf(fv) + " %%";
           }
           else
           {
+            fvts += " #"+ visited.Count() + " ";
             visited.Add(fv);
-            fvts = ToLoggableHelper(fv,visited);
+            fvts +=  ToLoggableHelper(fv,visited, indent+2);
           }
-          s += field.Name + ":" + fvts;
+          s += "  " + field.Name + ": " + fvts + endl;
         }
+        s+= "}";
         break;
       }
       // TODO: why?
@@ -84,6 +94,29 @@ namespace Factorized.Utility
         result = foldF(result,e);
       }
       return result;
+    }
+    public static bool IsLoggable<T>(this T obj) {
+      switch(obj){
+      case sbyte:
+      case byte:
+      case short:
+      case ushort:
+      case int:
+      case uint:
+      case long:
+      case ulong:
+      case nint:
+      case nuint:
+      case float:
+      case double:
+      case decimal:
+      case bool:
+      case char:
+      case string ss:
+        return true;
+      default:
+        return false;
+      }
     }
     public static IEnumerable<T> LogAll<T>(this IEnumerable<T> list) {
       Factorized.Instance.Logger.DebugFormat("{0}",list.ToLoggable());

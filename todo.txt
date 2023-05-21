@@ -1,2 +1,3 @@
 - make MachineTile drop stored Items again
-- discover how to copy documentation from other members
+- remove crates from fishing in a mod compatible manner
+- machine recipe browser
