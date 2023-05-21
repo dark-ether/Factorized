@@ -69,11 +69,11 @@ namespace Factorized.Machines {
   public abstract class MachineTE : ModTileEntity
   {
     public enum State : int {Idle, Working, Halted, Frozen};
-    public class StateSerializer : TagSerializer<State, TagCompound>
+    public class StateSerializer : TagSerializer<State, int>
     {
-      public override State Deserialize(TagCompound tag) => (State)(tag.Get<int>("state"));
+      public override State Deserialize(int tag) => (State)tag;
 
-      public override TagCompound Serialize(State value) => new TagCompound {["state"] = (int)value};
+      public override int Serialize(State value) => (int)value;
     }    
     //TODO: what was the zero for?
     public int Height {
@@ -200,7 +200,6 @@ namespace Factorized.Machines {
       Mod.Logger.ErrorFormat("Type {0} has no cached field info",GetType());
       return new List<FieldInfo>();
     }
-    // FIXME: doesn't load or doesn't save
     // SECTION: Persistence
     public sealed override void LoadData(TagCompound tag)
     {
@@ -226,8 +225,7 @@ namespace Factorized.Machines {
     public sealed override void NetReceive(BinaryReader reader) {
       TagCompound tag = TagIO.Read(reader);
       this
-        .GetType()
-        .GetFieldsIwA<MachineDataAttribute>()
+        .GetMachineDataFields()
         .OrderBy(field => field.Name)
         .ToList()
         .ForEach(field => field.SetValue(this,tag[field.Name]));
@@ -235,8 +233,7 @@ namespace Factorized.Machines {
     public sealed override void NetSend(BinaryWriter writer) {
       TagCompound tag = new ();
       this
-        .GetType()
-        .GetFieldsIwA<MachineDataAttribute>()
+        .GetMachineDataFields()
         .OrderBy(field => field.Name)
         .ToList()
         .ForEach(field => tag[field.Name] = field.GetValue(this));
@@ -298,8 +295,8 @@ namespace Factorized.Machines {
       if(OnMachinePostUpdate is not null) OnMachinePostUpdate(this);
       if(OnPostUpdateEvent is not null) OnPostUpdateEvent(this);
       OnPostUpdate();
-      // TODO: reimplement code for sending updates to clients
-      // NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
+      // TODO: performance concerns, single player there was no problem but maybe multiplayer there will be some?
+      NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
     }
 
     /// <summary>
