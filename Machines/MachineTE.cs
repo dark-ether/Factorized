@@ -101,6 +101,7 @@ namespace Factorized.Machines {
     public event Action<MachineTE> OnHaltEvent;
     public event Action<MachineTE> OnRestartEvent;
 
+    private static Dictionary<Type,IEnumerable<FieldInfo>> fieldsPerType = new ();
     /// <remarks>
     /// you should call ModContent.Tiletype here and do nothing else
     /// </remarks>
@@ -146,6 +147,7 @@ namespace Factorized.Machines {
     {
     }
 
+    // SECTION: Placement
     protected void _Place()
     {
       if(OnMachinePlace != null) OnMachinePlace(this);
@@ -182,16 +184,45 @@ namespace Factorized.Machines {
       }
       return false;
     }
-
+    // SECTION: Loading
     public sealed override void Load() {
-      //TODO: why?
+      Dictionary<Type,IEnumerable<FieldInfo>> temp = new ();
+      foreach(var m in ModContent.GetContent<MachineTE>()){
+        var mt = m.GetType();
+        Mod.Logger.DebugFormat("Types {0}",m.GetType());
+        temp[mt] = mt.GetFields(BindingFlags.NonPublic | BindingFlags.Public 
+            | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+          .Where(elem => elem.GetCustomAttributes().Any( t => t is MachineDataAttribute));
+      }
+      foreach(var t in temp.Keys) {
+        var mf = temp[t];
+        Type bt = t;
+        while(bt != typeof(ModTileEntity)){
+          bt = bt.BaseType;
+          mf = mf.Concat(temp[bt]);
+        }
+        fieldsPerType[t] = mf;
+      }
+
+
+
+    }
+    public sealed override void Unload(){
+      fieldsPerType = null;
     }
 
+    public IEnumerable<FieldInfo> GetMachineDataFields(){
+      IEnumerable<FieldInfo> fields;
+      if(fieldsPerType.TryGetValue(GetType(),out fields)) return fields;
+      Mod.Logger.ErrorFormat("Type {0} has no cached field info",GetType());
+      return new List<FieldInfo>();
+    }
+    // FIXME: doesn't load or doesn't save
+    // SECTION: Persistence
     public sealed override void LoadData(TagCompound tag)
     {
       this
-        .GetType()
-        .GetFieldsIwA<MachineDataAttribute>()
+        .GetMachineDataFields()
         .OrderBy(field => field.Name)
         .ToList()
         .ForEach(field => {
@@ -200,11 +231,10 @@ namespace Factorized.Machines {
     }
     public sealed override void SaveData(TagCompound tag) {
       this
-        .GetType()
-        .GetFieldsIwA<MachineDataAttribute>()
+        .GetMachineDataFields()
         .OrderBy(field => field.Name)
         .ToList()
-        .ForEach(field => tag[field.Name] = field.GetValue(this));
+        .ForEach(field => tag[field.Name] = field.GetValue(this) );
     }
 
     // TODO: NetReceive Constructs a new Machine?
@@ -233,6 +263,7 @@ namespace Factorized.Machines {
         NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
     }
 
+    // SECTION: Bussiness logic
     public sealed override void Update() {
       if(OnMachinePreUpdate is not null) OnMachinePreUpdate(this);
       if(OnPreUpdateEvent is not null) OnPreUpdateEvent(this);
@@ -340,7 +371,7 @@ namespace Factorized.Machines {
     /// Gets a MachineTE by id
     /// </summary>
     /// <remarks>
-    /// While perfectly fine in single player each tile entity may have a 
+    /// While perfectly fine in singleplayer each tile entity may have a 
     /// different id on each client, which may be different than the server's
     /// id so prefer to call the overload that takes a position
     /// </remarks>

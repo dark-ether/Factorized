@@ -29,22 +29,20 @@ namespace Factorized.Utility
       }
       var copies = visited.Count();
       var s = "";
-      var self = typeof(Lib).GetMethod("ToLoggableHelper",BindingFlags.NonPublic);
-      var ieg =  typeof(IEnumerable<T>);
-      var ie = typeof(IEnumerable);
       switch (obj)
       {
       case IEnumerable<T> l:
         var lal = l.ToArray();
         for (int j = 0; j < l.Count(); j++) {
-          s += "element " + j + ToLoggableHelper(lal[j],visited);
+          s += "element " + j + ": " + ToLoggableHelper(lal[j],visited);
         }
         s = "[" + s + "]";
         break;
       case IEnumerable l:
         var i = 0;
         foreach (var el in l) {
-          s += "element " + i + ToLoggableHelper(el,visited);
+          s += "element " + i + ": " + ToLoggableHelper(el,visited);
+          i++;
         }
         s = "[" + s + "]";
         break;
@@ -56,7 +54,7 @@ namespace Factorized.Utility
           Object fv = field.GetValue(obj);
           string fvts = "";
           if (visited.Contains(fv)) {
-            fvts = "[[ revisited element " + visited.IndexOf(fv).ToString() + " ]]";
+            fvts = "%% revisited element " + visited.IndexOf(fv) + " %%";
           }
           else
           {
@@ -67,24 +65,17 @@ namespace Factorized.Utility
         }
         break;
       }
-      if(visited.Count() > copies) {
-        s = "[[repeated element " + visited.IndexOf(obj) + "with info" + s +" ]]";
-      }
+      // TODO: why?
+      /*if(visited.Count() > copies) {
+        s = "%% repeated element " + visited.IndexOf(obj) + "with info" + s +" %%";
+      }*/
       return s;
     }
     public static IEnumerable<FieldInfo> GetFieldsIwA<T>(this Type obj) {
       return from field in obj.GetFields( BindingFlags.NonPublic
                                           | BindingFlags.Public | BindingFlags.Instance)
-             where field.CustomAttributes.Any(a => a is T)
+             where Attribute.GetCustomAttributes(field).Any(f => f is T)
              select field;
-    }
-    public static void TransferItPF<T1,T2>(this T1 src,T2 dst) {
-      var fields = dst.GetType().GetFieldsIwA<MachineDataAttribute>();
-    }
-    public static IEnumerable<T2> LiftE<T1,T2>(this IEnumerable<T1> col, Func<T1,T2> lifted)
-    {
-      return from e in col
-             select lifted(e);
     }
     public static T2 FoldE<T1,T2> (this IEnumerable<T1> col,Func<T2,T1,T2> foldF,T2 initial)
     {
@@ -93,6 +84,10 @@ namespace Factorized.Utility
         result = foldF(result,e);
       }
       return result;
+    }
+    public static IEnumerable<T> LogAll<T>(this IEnumerable<T> list) {
+      Factorized.Instance.Logger.DebugFormat("{0}",list.ToLoggable());
+      return list;
     }
   }
 }

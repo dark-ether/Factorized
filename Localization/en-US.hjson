@@ -20,6 +20,11 @@ Mods: {
 				DisplayName: Furnace
 				Tooltip: ""
 			}
+
+			SteelForgeItem: {
+				DisplayName: Steel Forge Item
+				Tooltip: ""
+			}
 		}
 	}
 }

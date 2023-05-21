@@ -28,6 +28,18 @@ namespace Factorized.UI {
     {
       var machine = MachineTE.Get(MP);
       if (machine == null) return;
+      var panel = new UIPanel();
+      panel.Height.Set(0,0.25f);
+      panel.Width.Set(0,0.35f);
+      panel.VAlign = 0.5f;
+      panel.HAlign = 0.05f;
+      panel.OnUpdate += (elem) => {
+        if (elem.IsMouseHovering) Main.LocalPlayer.mouseInterface = true;
+        elem.RemoveAllChildren();
+        var text = new UIText(machine.Get().counter.ToString());
+        elem.Append(text);
+      };
+      Append(panel);
     }
 
     public override void OnDeactivate()

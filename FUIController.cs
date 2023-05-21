@@ -58,6 +58,9 @@ namespace Factorized
     public void removeUI() {
       machineInterface.SetState(null);
     }
+    public override void OnWorldUnload(){
+      removeUI();
+    }
   }
 }
 
